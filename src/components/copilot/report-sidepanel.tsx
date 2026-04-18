@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
 
 import type { DraftKind } from "@/lib/drafts-kinds";
 import { DraftKindChip } from "@/components/drafts/kind-chip";
@@ -59,6 +61,7 @@ export function ReportSidepanel({
   savingState: "idle" | "saving" | "saved" | "error";
   lastSavedAt: string | null;
 }) {
+  const router = useRouter();
   const [drafts, setDrafts] = useState<DraftSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [draftName, setDraftName] = useState(currentDraftName);
@@ -88,10 +91,41 @@ export function ReportSidepanel({
     const mySeq = ++refreshSeq.current;
     setLoading(true);
     try {
-      const r = await fetch("/api/drafts", { cache: "no-store" });
-      if (!r.ok) throw new Error(`list ${r.status}`);
-      const body = (await r.json()) as { drafts: DraftSummary[] };
-      if (refreshSeq.current === mySeq) setDrafts(body.drafts ?? []);
+      const [draftsRes, reportsRes] = await Promise.all([
+        fetch("/api/drafts", { cache: "no-store" }),
+        fetch("/api/reports", { cache: "no-store" }),
+      ]);
+      const drafted = draftsRes.ok
+        ? ((await draftsRes.json()) as { drafts: DraftSummary[] }).drafts ?? []
+        : [];
+      type ReportSummary = {
+        id: string;
+        name: string;
+        generatedAt: string;
+        sourceDraftId: string;
+        articleName?: string;
+        defectCode?: string;
+        filename: string;
+        sizeBytes: number;
+      };
+      const reports = reportsRes.ok
+        ? ((await reportsRes.json()) as { reports: ReportSummary[] }).reports ?? []
+        : [];
+      const analyses: DraftSummary[] = reports.map((r) => ({
+        id: r.id,
+        name: r.name,
+        date: r.generatedAt.slice(0, 10),
+        kind: "Analysis",
+        filename: r.filename,
+        updatedAt: r.generatedAt,
+        problemPreview: [r.defectCode, r.articleName].filter(Boolean).join(" · "),
+        articleName: r.articleName,
+        sizeBytes: r.sizeBytes,
+      }));
+      const merged = [...drafted, ...analyses].sort((a, b) =>
+        a.updatedAt < b.updatedAt ? 1 : -1,
+      );
+      if (refreshSeq.current === mySeq) setDrafts(merged);
     } catch {
       // swallow — refresh is best-effort
     } finally {
@@ -107,11 +141,20 @@ export function ReportSidepanel({
     if (savingState === "saved") void refresh();
   }, [savingState, refresh]);
 
+  // Other components fire this event after writing to /api/drafts or
+  // /api/reports (e.g. "New incidence analysis" modal) — refresh the rail.
+  useEffect(() => {
+    const onExt = () => void refresh();
+    window.addEventListener("s3:workspace-changed", onExt);
+    return () => window.removeEventListener("s3:workspace-changed", onExt);
+  }, [refresh]);
+
   const doDelete = useCallback(
-    async (id: string) => {
-      if (!confirm("Delete this saved draft?")) return;
+    async (id: string, kind: DraftKind) => {
+      if (!confirm("Delete this saved item?")) return;
+      const endpoint = kind === "Analysis" ? "/api/reports" : "/api/drafts";
       try {
-        const r = await fetch(`/api/drafts/${encodeURIComponent(id)}`, {
+        const r = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
           method: "DELETE",
         });
         if (!r.ok) throw new Error(`delete ${r.status}`);
@@ -121,6 +164,17 @@ export function ReportSidepanel({
       }
     },
     [refresh],
+  );
+
+  const openRow = useCallback(
+    async (d: DraftSummary) => {
+      if (d.kind === "Analysis") {
+        router.push(`/reports/${encodeURIComponent(d.id)}`);
+      } else {
+        await onLoadDraft(d.id);
+      }
+    },
+    [router, onLoadDraft],
   );
 
   if (collapsed) {
@@ -271,6 +325,14 @@ export function ReportSidepanel({
           </Button>
         </div>
         <div className="mt-2">
+          <NewAnalysisButton
+            size="sm"
+            variant="outline"
+            className="h-7 w-full"
+            label="New incidence analysis"
+          />
+        </div>
+        <div className="mt-2">
           <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
             Export
           </div>
@@ -365,7 +427,7 @@ export function ReportSidepanel({
                 >
                   <button
                     type="button"
-                    onClick={() => void onLoadDraft(d.id)}
+                    onClick={() => void openRow(d)}
                     className="w-full text-left"
                   >
                     <div className="flex items-center gap-1.5">
@@ -388,9 +450,9 @@ export function ReportSidepanel({
                       className="invisible rounded p-0.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 group-hover:visible dark:hover:bg-red-950"
                       onClick={(e) => {
                         e.stopPropagation();
-                        void doDelete(d.id);
+                        void doDelete(d.id, d.kind);
                       }}
-                      title="Delete draft"
+                      title={d.kind === "Analysis" ? "Delete analysis" : "Delete draft"}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

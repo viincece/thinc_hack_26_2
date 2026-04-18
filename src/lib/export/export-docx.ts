@@ -109,67 +109,39 @@ function sectionTitle(D: DocxLib, id: string, title: string) {
   });
 }
 
+/**
+ * Emit a single label/value paragraph. Exported documents are audience-
+ * facing and must not leak the co-pilot's internal editor state
+ * (status pills, "needs:" prompts, evidence row IDs), so this renders as
+ * plain label + value only. `meta` is kept in the signature to treat
+ * `needs_input` as "no value yet" → em-dash.
+ */
 function labelValue(
   D: DocxLib,
   label: string,
   value: string | undefined | null,
   meta?: FieldMeta,
 ) {
-  const runs: import("docx").TextRun[] = [
-    new D.TextRun({
-      text: `${label}: `,
-      bold: true,
-      size: 18,
-      color: "6B7280",
-    }),
-    new D.TextRun({
-      text: value && value.length ? value : "—",
-      size: 20,
+  const empty =
+    meta?.status === "needs_input" ||
+    value === undefined ||
+    value === null ||
+    value === "";
+  const display = empty ? "—" : String(value);
+  return [
+    new D.Paragraph({
+      spacing: { after: 60 },
+      children: [
+        new D.TextRun({
+          text: `${label}: `,
+          bold: true,
+          size: 18,
+          color: "6B7280",
+        }),
+        new D.TextRun({ text: display, size: 20 }),
+      ],
     }),
   ];
-  if (meta?.status && meta.status !== "empty" && meta.status !== "filled") {
-    runs.push(
-      new D.TextRun({
-        text: `  (${STATUS_LABEL[meta.status]})`,
-        size: 16,
-        color: meta.status === "needs_input" ? "B45309" : "7C3AED",
-        italics: true,
-      }),
-    );
-  }
-  const blocks: (import("docx").Paragraph)[] = [
-    new D.Paragraph({ spacing: { after: 60 }, children: runs }),
-  ];
-  if (meta?.status === "needs_input" && meta.note) {
-    blocks.push(
-      new D.Paragraph({
-        spacing: { after: 60 },
-        children: [
-          new D.TextRun({
-            text: `   needs: ${meta.note}`,
-            size: 16,
-            italics: true,
-            color: "B45309",
-          }),
-        ],
-      }),
-    );
-  } else if (meta?.source) {
-    blocks.push(
-      new D.Paragraph({
-        spacing: { after: 60 },
-        children: [
-          new D.TextRun({
-            text: `   evidence: ${meta.source}`,
-            size: 14,
-            font: "Courier New",
-            color: "6B7280",
-          }),
-        ],
-      }),
-    );
-  }
-  return blocks;
 }
 
 function table(
@@ -425,45 +397,121 @@ export async function exportToDocx(input: {
   children.push(sectionTitle(D, "D4", "Root cause analysis"));
   for (const path of ["occurrence", "detection"] as const) {
     const block = doc[path];
-    const m = meta[path];
+    // Sub-heading per branch (occurrence / detection)
     children.push(
-      p(
-        D,
-        path === "occurrence"
-          ? "Why did the failure occur?"
-          : "Why was the failure not detected?",
-        { bold: true, size: 20 },
-      ),
+      new D.Paragraph({
+        spacing: { before: 160, after: 60 },
+        children: [
+          new D.TextRun({
+            text:
+              path === "occurrence"
+                ? "Why did the failure occur?"
+                : "Why was the failure not detected?",
+            bold: true,
+            size: 22,
+            color: "111827",
+          }),
+        ],
+      }),
     );
-    if (m?.status && m.status !== "empty" && m.status !== "filled") {
+    if (block?.categories?.length) {
       children.push(
-        p(D, `(${STATUS_LABEL[m.status]})`, { size: 16, color: "7C3AED" }),
+        new D.Paragraph({
+          spacing: { after: 60 },
+          children: [
+            new D.TextRun({
+              text: "Categories: ",
+              bold: true,
+              size: 18,
+              color: "6B7280",
+            }),
+            new D.TextRun({ text: block.categories.join(", "), size: 20 }),
+          ],
+        }),
       );
     }
-    if (block?.categories?.length) {
-      children.push(p(D, `Categories: ${block.categories.join(", ")}`));
-    }
     if (block?.potentialCause) {
-      children.push(p(D, `Potential cause: ${block.potentialCause}`));
+      children.push(
+        new D.Paragraph({
+          spacing: { after: 80 },
+          children: [
+            new D.TextRun({
+              text: "Potential cause: ",
+              bold: true,
+              size: 18,
+              color: "6B7280",
+            }),
+            new D.TextRun({ text: block.potentialCause, size: 20 }),
+          ],
+        }),
+      );
     }
     if (block?.whys?.some(Boolean)) {
+      children.push(
+        new D.Paragraph({
+          spacing: { before: 80, after: 40 },
+          children: [
+            new D.TextRun({
+              text: "5 Whys",
+              bold: true,
+              size: 16,
+              color: "6B7280",
+              allCaps: true,
+            }),
+          ],
+        }),
+      );
       block.whys.forEach((w, i) => {
-        children.push(p(D, `Why ${i + 1}: ${w || "—"}`));
+        if (!w) return;
+        children.push(
+          new D.Paragraph({
+            spacing: { after: 40 },
+            indent: { left: 200 },
+            children: [
+              new D.TextRun({
+                text: `${i + 1}.  `,
+                bold: true,
+                size: 18,
+                color: "6B7280",
+              }),
+              new D.TextRun({ text: w, size: 20 }),
+            ],
+          }),
+        );
       });
     }
     if (block?.rootCauses?.some((r) => r.text)) {
       children.push(
+        new D.Paragraph({
+          spacing: { before: 100, after: 40 },
+          children: [
+            new D.TextRun({
+              text: "Confirmed root causes",
+              bold: true,
+              size: 16,
+              color: "6B7280",
+              allCaps: true,
+            }),
+          ],
+        }),
+      );
+      children.push(
         table(
           D,
-          ["#", "Root cause", "Participation %"],
-          block.rootCauses.map((r, i) => [
-            String(i + 1),
-            r.text ?? "",
-            r.participation != null ? `${r.participation}%` : "",
-          ]),
-          [10, 70, 20],
+          ["#", "Root cause", "Part %"],
+          block.rootCauses
+            .filter((r) => r.text)
+            .map((r, i) => [
+              String(i + 1),
+              r.text ?? "",
+              r.participation != null ? `${r.participation}%` : "—",
+            ]),
+          [8, 78, 14],
         ),
       );
+      // Trailing blank paragraph so the next sub-heading doesn't sit flush
+      // against the table border.
+      children.push(new D.Paragraph({ spacing: { after: 120 }, children: [] }));
     }
   }
 

@@ -74,16 +74,49 @@ export function DraftsRail() {
     const my = ++seq.current;
     setLoading(true);
     try {
-      const r = await fetch("/api/drafts", { cache: "no-store" });
-      if (!r.ok) throw new Error(`list ${r.status}`);
-      const body = (await r.json()) as { drafts: Summary[] };
-      if (seq.current === my) setDrafts(body.drafts ?? []);
+      const [draftsRes, reportsRes] = await Promise.all([
+        fetch("/api/drafts", { cache: "no-store" }),
+        fetch("/api/reports", { cache: "no-store" }),
+      ]);
+      const drafted = draftsRes.ok
+        ? ((await draftsRes.json()) as { drafts: Summary[] }).drafts ?? []
+        : [];
+      type ReportSummary = {
+        id: string;
+        name: string;
+        generatedAt: string;
+        articleName?: string;
+        defectCode?: string;
+      };
+      const reports = reportsRes.ok
+        ? ((await reportsRes.json()) as { reports: ReportSummary[] }).reports ?? []
+        : [];
+      const analyses: Summary[] = reports.map((r) => ({
+        id: r.id,
+        name: r.name,
+        date: r.generatedAt.slice(0, 10),
+        kind: "Analysis",
+        updatedAt: r.generatedAt,
+        problemPreview: [r.defectCode, r.articleName].filter(Boolean).join(" · "),
+        articleName: r.articleName,
+      }));
+      const merged = [...drafted, ...analyses].sort((a, b) =>
+        a.updatedAt < b.updatedAt ? 1 : -1,
+      );
+      if (seq.current === my) setDrafts(merged);
     } catch {
       /* ignore */
     } finally {
       if (seq.current === my) setLoading(false);
     }
   }, []);
+
+  // Cross-component refresh — listen for generate/save events.
+  useEffect(() => {
+    const onExt = () => void refresh();
+    window.addEventListener("s3:workspace-changed", onExt);
+    return () => window.removeEventListener("s3:workspace-changed", onExt);
+  }, [refresh]);
 
   useEffect(() => {
     if (suppressed) return;
@@ -170,10 +203,14 @@ export function DraftsRail() {
           {visibleDrafts.slice(0, 14).map((d) => {
             const meta = draftKindMeta(d.kind);
             const Icon = meta.icon;
+            const href =
+              d.kind === "Analysis"
+                ? `/reports/${encodeURIComponent(d.id)}`
+                : `/report/new?draft=${encodeURIComponent(d.id)}`;
             return (
               <Link
                 key={d.id}
-                href={`/report/new?draft=${encodeURIComponent(d.id)}`}
+                href={href}
                 title={`${d.kind} · ${d.name}`}
                 className="flex h-7 w-7 items-center justify-center rounded-md text-muted-olive ring-1 ring-inset ring-transparent hover:ring-sage-border"
               >
@@ -320,7 +357,11 @@ export function DraftsRail() {
             {visibleDrafts.map((d) => (
               <li key={d.id}>
                 <Link
-                  href={`/report/new?draft=${encodeURIComponent(d.id)}`}
+                  href={
+                    d.kind === "Analysis"
+                      ? `/reports/${encodeURIComponent(d.id)}`
+                      : `/report/new?draft=${encodeURIComponent(d.id)}`
+                  }
                   className={cn(
                     "group block rounded-md border border-sage-border/70 bg-white/60 px-2 py-1.5 transition-colors",
                     "hover:border-light-border hover:bg-white",

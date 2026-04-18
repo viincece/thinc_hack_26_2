@@ -1,35 +1,26 @@
 "use client";
 
 /**
- * Client-side 8D → PDF export via @react-pdf/renderer.
+ * Client-side 8D → PDF export.
  *
- * Everything here runs in the browser. The @react-pdf/renderer build is
- * heavy, so we dynamic-import inside `exportToPdf` to keep it out of the
- * initial bundle.
+ * Prior versions of this file used @react-pdf/renderer to emit a Blob
+ * directly. That worked for minimal fixtures but deadlocked on real 8D
+ * drafts — specifically, the layout engine got into an infinite CPU loop
+ * when a narrow flex cell held a long identifier token like
+ * "SOLDER_COLD/CONNECTION_OPEN", and the export button never came back.
+ * See commit history for the bisect trace.
+ *
+ * The reliable path is the browser's own print-to-PDF pipeline: we build
+ * a fully-styled HTML document, open it in a popup, auto-trigger
+ * `window.print()`, and let the user "Save as PDF" from the native
+ * dialog. No heavy layout engine, no Blob, no download.
  */
 
-import type { ReactNode } from "react";
 import type {
   EightDDoc,
   FieldMeta,
   FieldMetaMap,
 } from "@/components/copilot/eight-d-doc";
-
-type Status = FieldMeta["status"] | "empty";
-
-const STATUS_COLOR: Record<Status, string> = {
-  filled: "#047857",
-  suggested: "#7c3aed",
-  needs_input: "#b45309",
-  empty: "#6b7280",
-};
-
-const STATUS_LABEL: Record<Status, string> = {
-  filled: "grounded",
-  suggested: "AI suggestion",
-  needs_input: "needs input",
-  empty: "empty",
-};
 
 const IMMEDIATE_LABEL: Record<string, string> = {
   production_stop: "Production & delivery stop",
@@ -65,732 +56,449 @@ function formatMember(m: {
   return [m.name, m.department, m.contact].filter(Boolean).join(" · ");
 }
 
-async function resolveImageSrc(src: string): Promise<string | null> {
-  if (!src) return null;
-  if (src.startsWith("data:")) return src;
-  try {
-    const r = await fetch(src);
-    if (!r.ok) return null;
-    const blob = await r.blob();
-    return await new Promise<string>((res) => {
-      const reader = new FileReader();
-      reader.onload = () => res(String(reader.result ?? ""));
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
+function esc(v: unknown): string {
+  if (v === null || v === undefined || v === "") return "—";
+  return String(v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
+/** Filled-in cell helper: shows em-dash for empty. */
+function cell(v: unknown): string {
+  return esc(v);
+}
+
+function displayed(meta: FieldMetaMap, path: string, value: unknown): string {
+  const m: FieldMeta | undefined = meta[path];
+  if (
+    m?.status === "needs_input" ||
+    value === null ||
+    value === undefined ||
+    value === ""
+  )
+    return "—";
+  return esc(value);
+}
+
+function field(label: string, value: string, wide = false): string {
+  return `<div class="field${wide ? " wide" : ""}">
+    <div class="field-label">${esc(label)}</div>
+    <div class="field-value">${value}</div>
+  </div>`;
+}
+
+function renderCauseBlock(
+  title: string,
+  block: EightDDoc["occurrence"] | undefined,
+): string {
+  const whys = (block?.whys ?? []).filter((w) => w && w.trim().length > 0);
+  const rootCauses = (block?.rootCauses ?? []).filter((r) => r.text);
+  const parts: string[] = [`<h3 class="h2">${esc(title)}</h3>`];
+  if (block?.categories && block.categories.length > 0) {
+    parts.push(
+      `<div class="sub"><div class="field-label">Categories</div><div class="field-value">${esc(
+        block.categories.join(", "),
+      )}</div></div>`,
+    );
+  }
+  if (block?.potentialCause) {
+    parts.push(
+      `<div class="sub"><div class="field-label">Potential cause</div><div class="field-value">${esc(
+        block.potentialCause,
+      )}</div></div>`,
+    );
+  }
+  if (whys.length > 0) {
+    parts.push(
+      `<div class="sub"><div class="h3">5 Whys</div><ol class="whys">${whys
+        .map((w) => `<li>${esc(w)}</li>`)
+        .join("")}</ol></div>`,
+    );
+  }
+  if (rootCauses.length > 0) {
+    parts.push(
+      `<div class="sub"><div class="h3">Confirmed root causes</div>
+        <table class="tbl">
+          <thead><tr><th style="width:6%">#</th><th>Root cause</th><th style="width:10%">Part %</th></tr></thead>
+          <tbody>${rootCauses
+            .map(
+              (r, i) =>
+                `<tr><td>${i + 1}</td><td>${esc(r.text ?? "—")}</td><td>${
+                  r.participation != null ? `${r.participation}%` : "—"
+                }</td></tr>`,
+            )
+            .join("")}</tbody>
+        </table></div>`,
+    );
+  }
+  return `<div class="causeblock">${parts.join("")}</div>`;
+}
+
+function renderActionsTable(
+  title: string,
+  rows: Array<{
+    rootCauseNo?: string;
+    description?: string;
+    responsible?: string;
+    date?: string;
+    effectiveness?: number;
+    note?: string;
+  }>,
+  kind: "planned" | "implemented",
+): string {
+  const populated = rows.filter(
+    (r) =>
+      (r.description && r.description.trim()) ||
+      (r.responsible && r.responsible.trim()) ||
+      (r.date && r.date.trim()) ||
+      r.effectiveness != null ||
+      (r.note && r.note.trim()) ||
+      (r.rootCauseNo && r.rootCauseNo.trim()),
+  );
+  const display = populated.length ? populated : rows.slice(0, 1);
+  const header =
+    kind === "planned"
+      ? `<tr><th style="width:8%">RC #</th><th>Action</th><th style="width:18%">Responsible</th><th style="width:14%">Date</th></tr>`
+      : `<tr><th style="width:8%">RC #</th><th>Action</th><th style="width:14%">Date</th><th style="width:10%">Eff %</th><th style="width:22%">Note</th></tr>`;
+  const body = display
+    .map((r) => {
+      const common = `<td>${cell(r.rootCauseNo)}</td><td>${cell(
+        r.description,
+      )}</td>`;
+      if (kind === "planned") {
+        return `<tr>${common}<td>${cell(r.responsible)}</td><td>${cell(
+          r.date,
+        )}</td></tr>`;
+      }
+      return `<tr>${common}<td>${cell(r.date)}</td><td>${
+        r.effectiveness != null ? `${r.effectiveness}%` : "—"
+      }</td><td>${cell(r.note)}</td></tr>`;
+    })
+    .join("");
+  return `<div class="causeblock"><div class="h3">${esc(
+    title,
+  )}</div><table class="tbl"><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+}
+
+function renderSection(id: string, title: string, body: string): string {
+  return `<section class="section"><header class="section-head"><span class="section-badge">${esc(
+    id,
+  )}</span><span class="section-title">${esc(
+    title,
+  )}</span></header><div class="section-body">${body}</div></section>`;
+}
+
+function buildHtml(
+  doc: EightDDoc,
+  meta: FieldMetaMap,
+  name: string,
+  draftId: string | null,
+): string {
+  const today = new Date().toISOString().slice(0, 10);
+  const fld = (label: string, value: unknown, path: string, wide = false) =>
+    field(label, displayed(meta, path, value), wide);
+
+  // D0
+  const d0 = `
+    <div class="row">${fld("Complaint date", doc.complaintDate, "complaintDate")}${fld(
+      "Report date",
+      doc.reportDate,
+      "reportDate",
+    )}</div>
+    <h4 class="h2">Customer</h4>
+    <div class="row">${fld(
+      "Complaint no.",
+      doc.customer?.complaintNo,
+      "customer.complaintNo",
+    )}${fld("Article no.", doc.customer?.articleNr, "customer.articleNr")}</div>
+    <div class="row">${fld(
+      "Article name",
+      doc.customer?.articleName,
+      "customer.articleName",
+      true,
+    )}</div>
+    <div class="row">${fld(
+      "Contact",
+      doc.customer?.contactPerson,
+      "customer.contactPerson",
+    )}${fld("Email", doc.customer?.email, "customer.email")}${fld(
+      "Phone",
+      doc.customer?.phone,
+      "customer.phone",
+    )}</div>
+    <h4 class="h2">Supplier</h4>
+    <div class="row">${fld(
+      "Complaint no.",
+      doc.supplier?.complaintNo,
+      "supplier.complaintNo",
+    )}${fld("Article no.", doc.supplier?.articleNr, "supplier.articleNr")}</div>
+    <div class="row">${fld(
+      "Article name",
+      doc.supplier?.articleName,
+      "supplier.articleName",
+      true,
+    )}</div>
+    <div class="row">${fld(
+      "Contact",
+      doc.supplier?.contactPerson,
+      "supplier.contactPerson",
+    )}${fld("Email", doc.supplier?.email, "supplier.email")}${fld(
+      "Phone",
+      doc.supplier?.phone,
+      "supplier.phone",
+    )}</div>`;
+
+  // D1
+  const teamBody = doc.team && doc.team.length > 0
+    ? `<table class="tbl"><thead><tr><th>Name</th><th>Department</th><th>Contact</th></tr></thead>
+       <tbody>${doc.team
+         .map(
+           (m) =>
+             `<tr><td>${cell(m.name)}</td><td>${cell(
+               m.department,
+             )}</td><td>${cell(m.contact)}</td></tr>`,
+         )
+         .join("")}</tbody></table>`
+    : `<div class="field-value">No team members listed.</div>`;
+  const d1 = `
+    <div class="row">${fld("Champion", formatMember(doc.champion), "champion", true)}</div>
+    <div class="row">${fld("Coordinator", formatMember(doc.coordinator), "coordinator", true)}</div>
+    <h4 class="h2">Team members</h4>
+    ${teamBody}`;
+
+  // D2
+  const imgs = (doc.failureImages ?? []).filter((i) => i.dataUrl || i.url);
+  const imgStrip = imgs.length
+    ? `<h4 class="h2">Failure pictures</h4><div class="img-strip">${imgs
+        .map(
+          (i) =>
+            `<figure class="img-frame"><img src="${esc(
+              i.dataUrl ?? i.url ?? "",
+            )}" alt="${esc(i.name)}" /><figcaption>${esc(i.name)}</figcaption></figure>`,
+        )
+        .join("")}</div>`
+    : "";
+  const d2 = `${fld("Problem", doc.problem, "problem", true)}${imgStrip}`;
+
+  // D3
+  const suspectRows = [
+    ["In production", doc.suspect?.inProduction],
+    ["In warehouse", doc.suspect?.inWarehouse],
+    ["In transit", doc.suspect?.inTransit],
+    ["At customer", doc.suspect?.atCustomer],
+  ] as const;
+  const d3 = `
+    <h4 class="h2">Location of suspect parts</h4>
+    <table class="tbl">
+      <thead><tr><th>Location</th><th style="width:10%">Qty</th><th style="width:12%">Done</th><th>Date code / PO / charge / cavity</th></tr></thead>
+      <tbody>${suspectRows
+        .map(
+          ([label, loc]) =>
+            `<tr><td>${esc(label)}</td><td>${cell(loc?.qty)}</td><td>${
+              loc?.conducted ? "Yes" : "No"
+            }</td><td>${cell(loc?.reference)}</td></tr>`,
+        )
+        .join("")}</tbody>
+    </table>
+    <h4 class="h2">Immediate actions</h4>
+    <table class="tbl">
+      <thead><tr><th style="width:18%">Action</th><th style="width:6%">On</th><th style="width:14%">Responsible</th><th style="width:10%">Due</th><th>Description</th><th style="width:8%">Eff %</th></tr></thead>
+      <tbody>${Object.entries(doc.immediate ?? {})
+        .map(
+          ([k, item]) =>
+            `<tr><td>${esc(IMMEDIATE_LABEL[k] ?? k)}</td><td>${
+              item.enabled ? "Yes" : "No"
+            }</td><td>${cell(item.responsible)}</td><td>${cell(
+              item.dueDate,
+            )}</td><td>${cell(item.description)}</td><td>${
+              item.effectiveness != null ? `${item.effectiveness}%` : "—"
+            }</td></tr>`,
+        )
+        .join("")}</tbody>
+    </table>
+    <div class="row">${fld("First OK delivery — PO #", doc.firstOkPo, "firstOkPo")}${fld("First OK delivery — ship date", doc.firstOkDate, "firstOkDate")}</div>`;
+
+  // D4
+  const d4 = `${renderCauseBlock(
+    "Why did the failure occur?",
+    doc.occurrence,
+  )}${renderCauseBlock(
+    "Why was the failure not detected?",
+    doc.detection,
+  )}`;
+
+  // D5
+  const d5 = `${renderActionsTable(
+    "For failure occurrence",
+    doc.plannedOccurrence ?? [],
+    "planned",
+  )}${renderActionsTable(
+    "For failure detection",
+    doc.plannedDetection ?? [],
+    "planned",
+  )}${fld(
+    "Risk of inducing a new failure",
+    yesNo(doc.riskOfNewFailure),
+    "riskOfNewFailure",
+  )}`;
+
+  // D6
+  const d6 = `${renderActionsTable(
+    "For failure occurrence",
+    doc.implementedOccurrence ?? [],
+    "implemented",
+  )}${renderActionsTable(
+    "For failure detection",
+    doc.implementedDetection ?? [],
+    "implemented",
+  )}`;
+
+  // D7
+  const d7 = `
+    <table class="tbl">
+      <thead><tr><th>Update</th><th style="width:10%">Yes/No</th><th style="width:18%">Responsible</th><th style="width:12%">Due</th><th style="width:12%">End</th></tr></thead>
+      <tbody>${Object.entries(doc.preventive ?? {})
+        .map(
+          ([k, item]) =>
+            `<tr><td>${esc(PREVENTIVE_LABEL[k] ?? k)}</td><td>${esc(
+              item.applicable || "—",
+            )}</td><td>${cell(item.responsible)}</td><td>${cell(
+              item.dueDate,
+            )}</td><td>${cell(item.endDate)}</td></tr>`,
+        )
+        .join("")}</tbody>
+    </table>
+    <div class="row">${fld(
+      "Transferred to similar processes",
+      yesNo(doc.transferredToSimilar),
+      "transferredToSimilar",
+    )}${fld(
+      "Other parts affected",
+      yesNo(doc.otherPartsAffected),
+      "otherPartsAffected",
+    )}</div>
+    ${doc.otherPartsAffected === "yes" ? `<div class="row">${fld("Which parts", doc.otherPartsWhich, "otherPartsWhich", true)}</div>` : ""}`;
+
+  // D8
+  const d8 = fld(
+    "Team appreciation / closing note",
+    doc.appreciation,
+    "appreciation",
+    true,
+  );
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>8D Report — ${esc(name)}</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #111827; font-size: 10pt; line-height: 1.35; }
+  body { padding: 0; }
+  h1, h2, h3, h4 { margin: 0; }
+  .report-header { border-bottom: 1px solid #d1d5db; padding-bottom: 8px; margin-bottom: 14px; }
+  .report-header h1 { font-size: 16pt; }
+  .report-header .sub { color: #6b7280; font-size: 9pt; margin-top: 2px; }
+  .section { margin-bottom: 14px; border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; page-break-inside: auto; break-inside: auto; }
+  .section-head { background: #10b981; color: #fff; padding: 5px 10px; display: flex; align-items: center; gap: 6px; }
+  .section-badge { background: #064e3b; padding: 1px 5px; border-radius: 2px; font-size: 9pt; font-weight: 700; }
+  .section-title { font-size: 11pt; font-weight: 700; }
+  .section-body { padding: 10px; background: #fff; }
+  .row { display: flex; gap: 10px; margin-bottom: 6px; }
+  .row > .field { flex: 1; }
+  .row > .field.wide { flex: 1 1 100%; }
+  .field-label { font-size: 8pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+  .field-value { font-size: 10pt; color: #111827; white-space: pre-wrap; word-break: break-word; }
+  .sub { margin-bottom: 8px; }
+  .h2 { font-size: 10pt; font-weight: 700; margin: 10px 0 4px; }
+  .h3 { font-size: 9pt; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.4px; margin: 6px 0 4px; }
+  .whys { margin: 4px 0 0; padding-left: 22px; }
+  .whys li { margin-bottom: 3px; font-size: 9pt; }
+  .tbl { width: 100%; border-collapse: collapse; margin-top: 4px; table-layout: fixed; }
+  .tbl th, .tbl td { border: 1px solid #e5e7eb; padding: 4px 6px; font-size: 9pt; text-align: left; vertical-align: top; word-break: break-word; overflow-wrap: anywhere; }
+  .tbl th { background: #f3f4f6; color: #374151; font-weight: 700; font-size: 8pt; }
+  .tbl tbody tr:nth-child(odd) { background: #fafafa; }
+  .img-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .img-frame { margin: 0; width: 120px; }
+  .img-frame img { width: 120px; height: 80px; object-fit: cover; border: 1px solid #d1d5db; border-radius: 2px; }
+  .img-frame figcaption { font-size: 7pt; color: #6b7280; margin-top: 1px; }
+  .causeblock { margin-bottom: 10px; }
+  .print-hint { position: fixed; top: 8px; right: 8px; background: #10b981; color: #fff; padding: 8px 12px; border-radius: 4px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,.15); z-index: 9999; }
+  .print-hint button { margin-left: 8px; background: #fff; color: #064e3b; border: 0; border-radius: 3px; padding: 3px 8px; font-size: 9pt; font-weight: 700; cursor: pointer; }
+  @media print { .print-hint { display: none; } .section { break-inside: auto; } .tbl { break-inside: auto; } .tbl tr { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="print-hint">Use your browser's print dialog to "Save as PDF" <button onclick="window.print()">Print</button></div>
+<div class="report-header">
+  <h1>8D Report — ${esc(name)}</h1>
+  <div class="sub">${draftId ? `ID ${esc(draftId)} · ` : ""}exported ${esc(today)}</div>
+</div>
+${renderSection("D0", "Header & statement", d0)}
+${renderSection("D1", "Team", d1)}
+${renderSection("D2", "Problem description", d2)}
+${renderSection("D3", "Immediate containment", d3)}
+${renderSection("D4", "Root cause analysis", d4)}
+${renderSection("D5", "Planned corrective actions", d5)}
+${renderSection("D6", "Implemented corrective actions", d6)}
+${renderSection("D7", "Preventive actions", d7)}
+${renderSection("D8", "Closure", d8)}
+<script>
+  // Auto-trigger the print dialog once the document has rendered. The
+  // setTimeout gives the browser a beat to lay out images + tables before
+  // the preview snapshot is taken.
+  window.addEventListener("load", function() { setTimeout(function(){ window.print(); }, 200); });
+</script>
+</body>
+</html>`;
+}
+
+/**
+ * Build the printable HTML for the draft, open it in a popup, and
+ * auto-trigger the browser's print dialog. Resolves once the popup has
+ * rendered — it does NOT wait for the user to click "Save".
+ *
+ * Returns a stub Blob containing the same HTML so callers that expect a
+ * Blob (e.g. `triggerDownload`) still work if wired up — but the default
+ * flow is to open the popup and let the user save from there.
+ */
 export async function exportToPdf(input: {
   doc: EightDDoc;
   meta: FieldMetaMap;
   name: string;
   draftId: string | null;
 }): Promise<Blob> {
-  const RPDF = await import("@react-pdf/renderer");
-  const { Document, Page, StyleSheet, Text, View, Image, pdf } = RPDF;
-
-  const styles = StyleSheet.create({
-    page: {
-      paddingTop: 32,
-      paddingBottom: 36,
-      paddingHorizontal: 36,
-      fontSize: 10,
-      fontFamily: "Helvetica",
-      color: "#111827",
-    },
-    header: {
-      borderBottomWidth: 1,
-      borderBottomColor: "#d1d5db",
-      paddingBottom: 8,
-      marginBottom: 12,
-    },
-    headerTitle: { fontSize: 16, fontWeight: "bold" },
-    headerSub: { fontSize: 9, color: "#6b7280", marginTop: 2 },
-    sectionCard: {
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: "#d1d5db",
-      borderRadius: 4,
-      overflow: "hidden",
-    },
-    sectionHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#10b981",
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-    },
-    sectionBadge: {
-      backgroundColor: "#064e3b",
-      color: "#ffffff",
-      paddingHorizontal: 4,
-      borderRadius: 2,
-      marginRight: 6,
-      fontSize: 9,
-      fontWeight: "bold",
-    },
-    sectionTitle: { fontSize: 11, fontWeight: "bold", color: "#ffffff" },
-    sectionBody: { padding: 8 },
-    row: { flexDirection: "row", gap: 6, marginBottom: 4 },
-    col: { flex: 1 },
-    fieldLabel: {
-      fontSize: 8,
-      color: "#6b7280",
-      textTransform: "uppercase",
-      letterSpacing: 0.4,
-      marginBottom: 1,
-    },
-    fieldValue: { fontSize: 10, color: "#111827" },
-    evidence: {
-      fontSize: 7,
-      fontFamily: "Courier",
-      color: "#6b7280",
-      marginTop: 1,
-    },
-    needsInputNote: {
-      fontSize: 8,
-      color: "#b45309",
-      fontStyle: "italic",
-      marginTop: 1,
-    },
-    statusPill: {
-      fontSize: 7,
-      paddingHorizontal: 3,
-      paddingVertical: 1,
-      borderRadius: 2,
-      marginLeft: 4,
-    },
-    table: {
-      borderWidth: 1,
-      borderColor: "#e5e7eb",
-      borderRadius: 2,
-      marginTop: 2,
-    },
-    tableHead: {
-      flexDirection: "row",
-      backgroundColor: "#f3f4f6",
-      borderBottomWidth: 1,
-      borderBottomColor: "#e5e7eb",
-    },
-    tableHeadCell: {
-      flex: 1,
-      padding: 3,
-      fontSize: 8,
-      fontWeight: "bold",
-      color: "#374151",
-    },
-    tableRow: {
-      flexDirection: "row",
-      borderBottomWidth: 1,
-      borderBottomColor: "#f1f5f9",
-    },
-    tableCell: { flex: 1, padding: 3, fontSize: 9 },
-    imageStrip: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 4,
-      marginTop: 4,
-    },
-    imageFrame: {
-      width: 120,
-      height: 80,
-      borderWidth: 1,
-      borderColor: "#d1d5db",
-      borderRadius: 2,
-      overflow: "hidden",
-    },
-    imageCaption: {
-      fontSize: 7,
-      color: "#6b7280",
-      marginTop: 1,
-      maxWidth: 120,
-    },
-    footer: {
-      position: "absolute",
-      bottom: 18,
-      left: 36,
-      right: 36,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      fontSize: 8,
-      color: "#9ca3af",
-    },
-    h2: { fontSize: 10, fontWeight: "bold", marginTop: 4, marginBottom: 2 },
-  });
-
   const { doc, meta, name, draftId } = input;
-  const today = new Date().toISOString().slice(0, 10);
+  const html = buildHtml(doc, meta, name, draftId);
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
 
-  // Pre-resolve failure images so <Image> gets base64 data URLs.
-  const resolvedImages = await Promise.all(
-    (doc.failureImages ?? []).map(async (img) => ({
-      name: img.name,
-      src: await resolveImageSrc(img.dataUrl ?? img.url ?? ""),
-    })),
-  );
-
-  function StatusPill({ meta: m }: { meta?: FieldMeta }) {
-    const s = (m?.status ?? "empty") as Status;
-    if (s === "empty") return null;
-    return (
-      <Text
-        style={[
-          styles.statusPill,
-          { backgroundColor: STATUS_COLOR[s] + "22", color: STATUS_COLOR[s] },
-        ]}
-      >
-        {STATUS_LABEL[s]}
-      </Text>
-    );
+  if (typeof window !== "undefined") {
+    const url = URL.createObjectURL(blob);
+    // Open in a new tab. Since this runs from a direct user-click handler,
+    // browsers do not treat it as a popup. The child tab auto-triggers
+    // `window.print()` once its load handler fires — the print dialog is
+    // modal inside that tab, not this one, so the editor stays responsive.
+    const win = window.open(url, "_blank");
+    if (!win) {
+      URL.revokeObjectURL(url);
+      // Fallback for popup-blocker corner cases: open inline so the user
+      // can at least trigger print from the current tab via Ctrl+P.
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+    } else {
+      // Revoke once the child has had time to consume the URL.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    }
   }
 
-  function Field({
-    label,
-    value,
-    path,
-    wide,
-  }: {
-    label: string;
-    value: string | number | null | undefined;
-    path: string;
-    wide?: boolean;
-  }) {
-    const m = meta[path];
-    const displayed =
-      m?.status === "needs_input"
-        ? "—"
-        : value === undefined || value === null || value === ""
-          ? "—"
-          : String(value);
-    return (
-      <View style={wide ? { flexBasis: "100%", flexGrow: 1 } : styles.col}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.fieldLabel}>{label}</Text>
-          <StatusPill meta={m} />
-        </View>
-        <Text style={styles.fieldValue}>{displayed}</Text>
-        {m?.status === "needs_input" && m.note ? (
-          <Text style={styles.needsInputNote}>Needs: {m.note}</Text>
-        ) : null}
-        {m?.source && m.status !== "needs_input" ? (
-          <Text style={styles.evidence}>evidence: {m.source}</Text>
-        ) : null}
-      </View>
-    );
-  }
-
-  function Section({
-    id,
-    title,
-    children,
-  }: {
-    id: string;
-    title: string;
-    children: ReactNode;
-  }) {
-    return (
-      <View style={styles.sectionCard} wrap>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionBadge}>{id}</Text>
-          <Text style={styles.sectionTitle}>{title}</Text>
-        </View>
-        <View style={styles.sectionBody}>{children}</View>
-      </View>
-    );
-  }
-
-  function CauseBlock({
-    title,
-    path,
-    block,
-  }: {
-    title: string;
-    path: "occurrence" | "detection";
-    block: EightDDoc["occurrence"];
-  }) {
-    const m = meta[path];
-    return (
-      <View style={{ marginBottom: 6 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.h2}>{title}</Text>
-          {m?.status && m.status !== "empty" && m.status !== "filled" ? (
-            <Text
-              style={[
-                styles.statusPill,
-                {
-                  backgroundColor: STATUS_COLOR[m.status] + "22",
-                  color: STATUS_COLOR[m.status],
-                },
-              ]}
-            >
-              {STATUS_LABEL[m.status]}
-            </Text>
-          ) : null}
-        </View>
-        {block?.categories && block.categories.length > 0 ? (
-          <Text style={styles.fieldValue}>
-            Categories: {block.categories.join(", ")}
-          </Text>
-        ) : null}
-        {block?.potentialCause ? (
-          <Text style={styles.fieldValue}>
-            Potential cause: {block.potentialCause}
-          </Text>
-        ) : null}
-        {block?.whys && block.whys.some(Boolean) ? (
-          <View style={{ marginTop: 2 }}>
-            {block.whys.map((w, i) => (
-              <Text key={i} style={{ fontSize: 9 }}>
-                Why {i + 1}: {w || "—"}
-              </Text>
-            ))}
-          </View>
-        ) : null}
-        {block?.rootCauses && block.rootCauses.some((r) => r.text) ? (
-          <View style={styles.table}>
-            <View style={styles.tableHead}>
-              <Text style={[styles.tableHeadCell, { flex: 0.4 }]}>#</Text>
-              <Text style={styles.tableHeadCell}>Root cause</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>Part %</Text>
-            </View>
-            {block.rootCauses.map((r, i) => (
-              <View key={i} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { flex: 0.4 }]}>{i + 1}</Text>
-                <Text style={styles.tableCell}>{r.text ?? "—"}</Text>
-                <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                  {r.participation != null ? `${r.participation}%` : "—"}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-      </View>
-    );
-  }
-
-  function ActionsTable({
-    title,
-    rows,
-    kind,
-  }: {
-    title: string;
-    rows: Array<{
-      rootCauseNo?: string;
-      description?: string;
-      responsible?: string;
-      date?: string;
-      effectiveness?: number;
-      note?: string;
-    }>;
-    kind: "planned" | "implemented";
-  }) {
-    return (
-      <View style={{ marginBottom: 6 }}>
-        <Text style={styles.h2}>{title}</Text>
-        <View style={styles.table}>
-          <View style={styles.tableHead}>
-            <Text style={[styles.tableHeadCell, { flex: 0.4 }]}>RC</Text>
-            <Text style={[styles.tableHeadCell, { flex: 1.6 }]}>Action</Text>
-            {kind === "planned" ? (
-              <Text style={styles.tableHeadCell}>Responsible</Text>
-            ) : null}
-            <Text style={[styles.tableHeadCell, { flex: 0.7 }]}>Date</Text>
-            {kind === "implemented" ? (
-              <>
-                <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>Eff %</Text>
-                <Text style={[styles.tableHeadCell, { flex: 1.2 }]}>Note</Text>
-              </>
-            ) : null}
-          </View>
-          {rows.map((r, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 0.4 }]}>
-                {r.rootCauseNo ?? "—"}
-              </Text>
-              <Text style={[styles.tableCell, { flex: 1.6 }]}>
-                {r.description ?? "—"}
-              </Text>
-              {kind === "planned" ? (
-                <Text style={styles.tableCell}>{r.responsible ?? "—"}</Text>
-              ) : null}
-              <Text style={[styles.tableCell, { flex: 0.7 }]}>
-                {r.date ?? "—"}
-              </Text>
-              {kind === "implemented" ? (
-                <>
-                  <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                    {r.effectiveness != null ? `${r.effectiveness}%` : "—"}
-                  </Text>
-                  <Text style={[styles.tableCell, { flex: 1.2 }]}>
-                    {r.note ?? "—"}
-                  </Text>
-                </>
-              ) : null}
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  }
-
-  const PdfDoc = (
-    <Document title={name} author="S³ SixSigmaSense">
-      <Page size="A4" style={styles.page} wrap>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>8D Report — {name}</Text>
-          <Text style={styles.headerSub}>
-            {draftId ? `ID ${draftId} · ` : ""}exported {today}
-          </Text>
-        </View>
-
-        <Section id="D0" title="Header & statement">
-          <View style={styles.row}>
-            <Field
-              label="Complaint date"
-              value={doc.complaintDate}
-              path="complaintDate"
-            />
-            <Field
-              label="Report date"
-              value={doc.reportDate}
-              path="reportDate"
-            />
-          </View>
-          <Text style={styles.h2}>Customer</Text>
-          <View style={styles.row}>
-            <Field
-              label="Complaint no."
-              value={doc.customer?.complaintNo}
-              path="customer.complaintNo"
-            />
-            <Field
-              label="Article no."
-              value={doc.customer?.articleNr}
-              path="customer.articleNr"
-            />
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Article name"
-              value={doc.customer?.articleName}
-              path="customer.articleName"
-              wide
-            />
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Contact"
-              value={doc.customer?.contactPerson}
-              path="customer.contactPerson"
-            />
-            <Field
-              label="Email"
-              value={doc.customer?.email}
-              path="customer.email"
-            />
-            <Field
-              label="Phone"
-              value={doc.customer?.phone}
-              path="customer.phone"
-            />
-          </View>
-          <Text style={styles.h2}>Supplier</Text>
-          <View style={styles.row}>
-            <Field
-              label="Complaint no."
-              value={doc.supplier?.complaintNo}
-              path="supplier.complaintNo"
-            />
-            <Field
-              label="Article no."
-              value={doc.supplier?.articleNr}
-              path="supplier.articleNr"
-            />
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Article name"
-              value={doc.supplier?.articleName}
-              path="supplier.articleName"
-              wide
-            />
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Contact"
-              value={doc.supplier?.contactPerson}
-              path="supplier.contactPerson"
-            />
-            <Field
-              label="Email"
-              value={doc.supplier?.email}
-              path="supplier.email"
-            />
-            <Field
-              label="Phone"
-              value={doc.supplier?.phone}
-              path="supplier.phone"
-            />
-          </View>
-        </Section>
-
-        <Section id="D1" title="Team">
-          <View style={styles.row}>
-            <Field
-              label="Champion"
-              value={formatMember(doc.champion)}
-              path="champion"
-              wide
-            />
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Coordinator"
-              value={formatMember(doc.coordinator)}
-              path="coordinator"
-              wide
-            />
-          </View>
-          <Text style={styles.h2}>Team members</Text>
-          {doc.team && doc.team.length > 0 ? (
-            <View style={styles.table}>
-              <View style={styles.tableHead}>
-                <Text style={styles.tableHeadCell}>Name</Text>
-                <Text style={styles.tableHeadCell}>Department</Text>
-                <Text style={styles.tableHeadCell}>Contact</Text>
-              </View>
-              {doc.team.map((m, i) => (
-                <View key={i} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{m.name ?? "—"}</Text>
-                  <Text style={styles.tableCell}>{m.department ?? "—"}</Text>
-                  <Text style={styles.tableCell}>{m.contact ?? "—"}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.fieldValue}>No team members listed.</Text>
-          )}
-        </Section>
-
-        <Section id="D2" title="Problem description">
-          <Field label="Problem" value={doc.problem} path="problem" wide />
-          {resolvedImages.some((i) => i.src) ? (
-            <View>
-              <Text style={styles.h2}>Failure pictures</Text>
-              <View style={styles.imageStrip}>
-                {resolvedImages.map((img, i) =>
-                  img.src ? (
-                    <View key={i} style={{ flexDirection: "column" }}>
-                      <View style={styles.imageFrame}>
-                        <Image
-                          src={img.src}
-                          style={{ width: 120, height: 80 }}
-                        />
-                      </View>
-                      <Text style={styles.imageCaption}>{img.name}</Text>
-                    </View>
-                  ) : null,
-                )}
-              </View>
-            </View>
-          ) : null}
-        </Section>
-
-        <Section id="D3" title="Immediate containment">
-          <Text style={styles.h2}>Location of suspect parts</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHead}>
-              <Text style={styles.tableHeadCell}>Location</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.4 }]}>Qty</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>Done</Text>
-              <Text style={[styles.tableHeadCell, { flex: 1.6 }]}>
-                Date code / PO / charge / cavity
-              </Text>
-            </View>
-            {(
-              [
-                ["In production", doc.suspect?.inProduction],
-                ["In warehouse", doc.suspect?.inWarehouse],
-                ["In transit", doc.suspect?.inTransit],
-                ["At customer", doc.suspect?.atCustomer],
-              ] as const
-            ).map(([label, loc]) => (
-              <View key={label} style={styles.tableRow}>
-                <Text style={styles.tableCell}>{label}</Text>
-                <Text style={[styles.tableCell, { flex: 0.4 }]}>
-                  {loc?.qty ?? "—"}
-                </Text>
-                <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                  {loc?.conducted ? "Yes" : "No"}
-                </Text>
-                <Text style={[styles.tableCell, { flex: 1.6 }]}>
-                  {loc?.reference ?? "—"}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          <Text style={styles.h2}>Immediate actions</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHead}>
-              <Text style={[styles.tableHeadCell, { flex: 1.4 }]}>Action</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>On</Text>
-              <Text style={styles.tableHeadCell}>Responsible</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.7 }]}>Due</Text>
-              <Text style={styles.tableHeadCell}>Description</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>Eff %</Text>
-            </View>
-            {Object.entries(doc.immediate ?? {}).map(([k, item]) => (
-              <View key={k} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { flex: 1.4 }]}>
-                  {IMMEDIATE_LABEL[k] ?? k}
-                </Text>
-                <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                  {item.enabled ? "Yes" : "No"}
-                </Text>
-                <Text style={styles.tableCell}>{item.responsible ?? "—"}</Text>
-                <Text style={[styles.tableCell, { flex: 0.7 }]}>
-                  {item.dueDate ?? "—"}
-                </Text>
-                <Text style={styles.tableCell}>{item.description ?? "—"}</Text>
-                <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                  {item.effectiveness != null
-                    ? `${item.effectiveness}%`
-                    : "—"}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.row}>
-            <Field
-              label="First OK delivery — PO #"
-              value={doc.firstOkPo}
-              path="firstOkPo"
-            />
-            <Field
-              label="First OK delivery — ship date"
-              value={doc.firstOkDate}
-              path="firstOkDate"
-            />
-          </View>
-        </Section>
-
-        <Section id="D4" title="Root cause analysis">
-          <CauseBlock
-            title="Why did the failure occur?"
-            path="occurrence"
-            block={doc.occurrence}
-          />
-          <CauseBlock
-            title="Why was the failure not detected?"
-            path="detection"
-            block={doc.detection}
-          />
-        </Section>
-
-        <Section id="D5" title="Planned corrective actions">
-          <ActionsTable
-            title="For failure occurrence"
-            rows={doc.plannedOccurrence ?? []}
-            kind="planned"
-          />
-          <ActionsTable
-            title="For failure detection"
-            rows={doc.plannedDetection ?? []}
-            kind="planned"
-          />
-          <Field
-            label="Risk of inducing a new failure"
-            value={yesNo(doc.riskOfNewFailure)}
-            path="riskOfNewFailure"
-          />
-        </Section>
-
-        <Section id="D6" title="Implemented corrective actions">
-          <ActionsTable
-            title="For failure occurrence"
-            rows={doc.implementedOccurrence ?? []}
-            kind="implemented"
-          />
-          <ActionsTable
-            title="For failure detection"
-            rows={doc.implementedDetection ?? []}
-            kind="implemented"
-          />
-        </Section>
-
-        <Section id="D7" title="Preventive actions">
-          <View style={styles.table}>
-            <View style={styles.tableHead}>
-              <Text style={styles.tableHeadCell}>Update</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.5 }]}>Yes/No</Text>
-              <Text style={styles.tableHeadCell}>Responsible</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.7 }]}>Due</Text>
-              <Text style={[styles.tableHeadCell, { flex: 0.7 }]}>End</Text>
-            </View>
-            {Object.entries(doc.preventive ?? {}).map(([k, item]) => (
-              <View key={k} style={styles.tableRow}>
-                <Text style={styles.tableCell}>
-                  {PREVENTIVE_LABEL[k] ?? k}
-                </Text>
-                <Text style={[styles.tableCell, { flex: 0.5 }]}>
-                  {item.applicable || "—"}
-                </Text>
-                <Text style={styles.tableCell}>{item.responsible ?? "—"}</Text>
-                <Text style={[styles.tableCell, { flex: 0.7 }]}>
-                  {item.dueDate ?? "—"}
-                </Text>
-                <Text style={[styles.tableCell, { flex: 0.7 }]}>
-                  {item.endDate ?? "—"}
-                </Text>
-              </View>
-            ))}
-          </View>
-          <View style={styles.row}>
-            <Field
-              label="Transferred to similar processes"
-              value={yesNo(doc.transferredToSimilar)}
-              path="transferredToSimilar"
-            />
-            <Field
-              label="Other parts affected"
-              value={yesNo(doc.otherPartsAffected)}
-              path="otherPartsAffected"
-            />
-          </View>
-          {doc.otherPartsAffected === "yes" ? (
-            <Field
-              label="Which parts"
-              value={doc.otherPartsWhich}
-              path="otherPartsWhich"
-              wide
-            />
-          ) : null}
-        </Section>
-
-        <Section id="D8" title="Closure">
-          <Field
-            label="Team appreciation / closing note"
-            value={doc.appreciation}
-            path="appreciation"
-            wide
-          />
-        </Section>
-
-        <View style={styles.footer} fixed>
-          <Text>S³ SixSigmaSense · 8D Report</Text>
-          <Text
-            render={({ pageNumber, totalPages }) =>
-              `${pageNumber} / ${totalPages}`
-            }
-          />
-        </View>
-      </Page>
-    </Document>
-  );
-
-  return await pdf(PdfDoc).toBlob();
+  return blob;
 }

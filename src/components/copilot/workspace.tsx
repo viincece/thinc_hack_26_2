@@ -356,22 +356,16 @@ export function ReportWorkspace({
 
   const onExportPdf = useCallback(async () => {
     const { exportToPdf } = await import("@/lib/export/export-pdf");
-    const blob = await exportToPdf({
+    // The exporter opens a print-preview popup and triggers
+    // window.print() on its own — no blob download is issued. User then
+    // picks "Save as PDF" from the browser print dialog.
+    await exportToPdf({
       doc,
       meta,
       name: draftName || deriveDefaultName(doc),
       draftId,
     });
-    triggerDownload(blob, buildExportFilename("pdf"));
-  }, [
-    doc,
-    meta,
-    draftId,
-    draftName,
-    deriveDefaultName,
-    triggerDownload,
-    buildExportFilename,
-  ]);
+  }, [doc, meta, draftId, draftName, deriveDefaultName]);
 
   const onExportDocx = useCallback(async () => {
     const { exportToDocx } = await import("@/lib/export/export-docx");

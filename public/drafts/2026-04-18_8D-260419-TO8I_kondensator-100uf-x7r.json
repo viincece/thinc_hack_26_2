@@ -1,0 +1,515 @@
+{
+  "id": "8D-260419-TO8I",
+  "name": "Kondensator 100uF X7R",
+  "date": "2026-04-18",
+  "kind": "8D",
+  "doc": {
+    "complaintDate": "2026-01-26",
+    "reportDate": "2026-04-18",
+    "customer": {
+      "articleNr": "ART-00001",
+      "articleName": "Motor Controller MC-200",
+      "drawingIndex": "DWG-PM-00008 Rev A",
+      "complaintNo": "1342123134"
+    },
+    "supplier": {
+      "articleNr": "PM-00008",
+      "articleName": "Kondensator 100uF X7R",
+      "drawingIndex": "DWG-PM-00008 Rev A"
+    },
+    "champion": {},
+    "coordinator": {},
+    "team": [
+      {
+        "name": "user_042",
+        "department": "Montage / Rework",
+        "contact": ""
+      },
+      {
+        "name": "user_071",
+        "department": "Montage / Rework",
+        "contact": ""
+      },
+      {
+        "name": "user_023",
+        "department": "Montage / Rework",
+        "contact": ""
+      },
+      {
+        "name": "Incoming QC Engineer",
+        "department": "Quality",
+        "contact": ""
+      },
+      {
+        "name": "Supplier Quality Engineer",
+        "department": "SQA",
+        "contact": ""
+      },
+      {
+        "name": "SMT Process Engineer",
+        "department": "Manufacturing Engineering",
+        "contact": ""
+      }
+    ],
+    "problem": "Cold solder joint cluster on C12 capacitor (PM-00008, Kondensator 100µF X7R) on Motor Controller MC-200 (ART-00001). 26 in-factory SOLDER_COLD defects concentrated in weeks 5–6/2026 (2026-01-26 to 2026-02-11), all linked to ElektroParts GmbH supplier batch SB-00009 (B00009, received 2026-02-03). Symptoms: tombstoning, poor wetting, shifted components, solder bridging at C12 position. Severity predominantly high/critical. 12 field claims followed in March–April 2026 across DE, FR, US, IT markets reporting total unit failure after thermal cycling (8–12 weeks in field). Total impact: €4,243 defect cost + €1,648 rework cost + €10,820 field claim cost = ~€16,711.",
+    "failureImages": [
+      {
+        "name": "defect_01_cold_solder.jpg — representative cold-solder image from multiple defects (DEF-00002, DEF-00006, DEF-00015, DEF-00025)"
+      }
+    ],
+    "suspect": {
+      "inProduction": {
+        "qty": 260,
+        "conducted": false,
+        "reference": "260 products received parts from SB-00009 batch. Exact in-production count requires WIP check — 260 is total installed."
+      },
+      "inWarehouse": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "inTransit": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "atCustomer": {
+        "qty": 12,
+        "conducted": true,
+        "reference": "12 field claims received (FC-00001 through FC-00012) from DE, FR, US, IT markets. Actual units at customer likely higher."
+      }
+    },
+    "immediate": {
+      "production_stop": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-19",
+        "description": "Stop use of PM-00008 from batch SB-00009 (B00009, ElektroParts GmbH) on all production lines. Quarantine remaining stock. Switch to batch SB-00010 or SB-00008 after ESR verification.",
+        "effectiveness": 0
+      },
+      "customer_informed": {},
+      "internal_info": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-19",
+        "description": "Notify all line supervisors (Montage Linie 1/2, all factories) that batch SB-00009 PM-00008 is quarantined. Post quality alert at SMT assembly stations.",
+        "effectiveness": 0
+      },
+      "sample_request": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-25",
+        "description": "Request 20 pcs retention samples from SB-00009 for ESR testing, cross-section analysis, and wetting-balance test. Also request 20 pcs from SB-00008 (known-good batch) as control.",
+        "effectiveness": 0
+      },
+      "warehouse_sort": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-21",
+        "description": "Sort all PM-00008 stock in warehouse by batch. Quarantine SB-00009 (B00009). Release SB-00008 and SB-00010 only after ESR verification passes.",
+        "effectiveness": 0
+      },
+      "derogation": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "No derogation recommended — defective batch must be fully replaced, not used-as-is.",
+        "effectiveness": 0
+      },
+      "sub_supplier_claim": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-25",
+        "description": "Open formal 8D supplier claim against ElektroParts GmbH (SUP-01) for batch SB-00009 (B00009). Demand root-cause analysis of lead-finish deviation, corrective action plan, and credit for €16,711 total quality cost.",
+        "effectiveness": 0
+      },
+      "additional_controls": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-21",
+        "description": "Implement 100% ESR screening on all incoming PM-00008 batches until supplier corrective action is verified. Add visual inspection of C12 solder joint at SMT exit.",
+        "effectiveness": 0
+      },
+      "other": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-30",
+        "description": "Initiate field recall assessment for all MC-200 units built with SB-00009 parts. Prioritize units shipped to thermal-cycling environments. Coordinate RMA with affected customers.",
+        "effectiveness": 0
+      }
+    },
+    "firstOkPo": "",
+    "firstOkDate": "",
+    "occurrence": {
+      "categories": [
+        "Material"
+      ],
+      "potentialCause": "Incoming supplier batch SB-00009 (ElektroParts GmbH, Kondensator 100µF X7R, received 2026-02-03) has elevated ESR and poor lead finish causing insufficient solder wetting during reflow, leading to cold joints, tombstoning, and component shift at BOM position C12.",
+      "whys": [
+        "Why did C12 caps have cold solder joints? — Because solder did not wet properly to the component leads during reflow.",
+        "Why did solder not wet properly? — Because the lead finish on batch SB-00009 capacitors had poor solderability (elevated ESR, oxidized or contaminated leads).",
+        "Why did batch SB-00009 have poor lead finish? — Because ElektroParts GmbH supplier QA did not catch the lead-finish deviation before shipment.",
+        "Why did supplier QA miss it? — Because incoming inspection criteria at ElektroParts do not include solderability/wetting-balance testing on every batch.",
+        "Why is there no solderability gate at supplier? — Because the supplier specification was not updated to require per-batch wetting-balance or ESR screening."
+      ],
+      "rootCauses": [
+        {
+          "text": "ElektroParts GmbH batch SB-00009 (PM-00008) shipped with defective lead finish causing poor solderability — supplier QA escape.",
+          "participation": 90
+        },
+        {
+          "text": "Manex incoming inspection did not include ESR / solderability check for PM-00008 capacitors — detection gap at goods receipt.",
+          "participation": 10
+        }
+      ]
+    },
+    "detection": {
+      "categories": [
+        "Measurement",
+        "Method"
+      ],
+      "potentialCause": "Cold solder joints on C12 were only detected at end-of-line electrical test (Pruefung Linie 2, SEC-00005). No incoming inspection gate caught the defective batch, and no in-line visual/AOI check at SMT assembly flagged poor wetting before board integration.",
+      "whys": [
+        "Why were defective units not caught earlier? — Because the only electrical test is at end-of-line (Pruefung), not at SMT sub-assembly level.",
+        "Why is there no SMT-level inspection? — Because AOI/X-ray is not deployed on the C12 solder joint in the current control plan.",
+        "Why isn't C12 in the AOI scope? — Because the control plan was written before this failure mode was known and capacitor solderability was assumed adequate.",
+        "Why was incoming inspection insufficient? — Because ESR / solderability testing was not part of the incoming QC protocol for PM-00008.",
+        "Why was no incoming QC for solderability? — Because the supplier was historically reliable and no risk assessment flagged the need."
+      ],
+      "rootCauses": [
+        {
+          "text": "No incoming ESR or solderability screening for PM-00008 at goods receipt allowed defective batch SB-00009 to enter production undetected.",
+          "participation": 60
+        },
+        {
+          "text": "No in-process AOI / visual gate at SMT assembly for C12 joint quality — defects only caught at end-of-line test.",
+          "participation": 40
+        }
+      ]
+    },
+    "plannedOccurrence": [
+      {
+        "rootCauseNo": 1,
+        "description": "Require ElektroParts GmbH to implement per-batch wetting-balance and ESR testing with Cpk ≥ 1.33 on PM-00008 before shipment. Update supplier quality agreement.",
+        "responsible": "unassigned",
+        "date": "2026-05-15"
+      },
+      {
+        "rootCauseNo": 1,
+        "description": "Qualify alternative capacitor supplier as second source for PM-00008 (100µF X7R) to reduce single-source risk.",
+        "responsible": "unassigned",
+        "date": "2026-06-30"
+      },
+      {
+        "rootCauseNo": 2,
+        "description": "Add ESR and solderability (wetting-balance) test to incoming inspection protocol for PM-00008 at goods receipt. Reject batches outside spec.",
+        "responsible": "unassigned",
+        "date": "2026-05-01"
+      }
+    ],
+    "plannedDetection": [
+      {
+        "rootCauseNo": 1,
+        "description": "Deploy AOI (Automated Optical Inspection) at SMT exit to inspect C12 solder joint quality before board integration. Target: 100% coverage of BOM position C12.",
+        "responsible": "unassigned",
+        "date": "2026-05-15"
+      },
+      {
+        "rootCauseNo": 2,
+        "description": "Add in-circuit ESR test for C12 at Pruefung stations (SEC-00002, SEC-00005) with pass/fail limit to catch marginal joints that pass visual but fail electrically.",
+        "responsible": "unassigned",
+        "date": "2026-05-01"
+      }
+    ],
+    "riskOfNewFailure": "yes",
+    "implementedOccurrence": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "implementedDetection": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "preventive": {
+      "work_instruction": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-01",
+        "endDate": ""
+      },
+      "spc": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-15",
+        "endDate": ""
+      },
+      "control_plan": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-01",
+        "endDate": ""
+      },
+      "fmea": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-15",
+        "endDate": ""
+      },
+      "preventive_maintenance": {
+        "applicable": "no",
+        "responsible": "",
+        "dueDate": "",
+        "endDate": ""
+      },
+      "other": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-06-30",
+        "endDate": ""
+      }
+    },
+    "transferredToSimilar": "yes",
+    "otherPartsAffected": "yes",
+    "otherPartsWhich": "",
+    "appreciation": "This 8D addresses the SOLDER_COLD defect cluster on Motor Controller MC-200 (ART-00001), root-caused to a defective incoming capacitor batch SB-00009 from ElektroParts GmbH. The investigation identified 26 in-factory defects and 12 field claims totaling ~€16.7k in quality costs. Root cause: supplier lead-finish defect causing poor solderability at C12 position. Key corrective actions include batch quarantine, incoming ESR screening, AOI deployment at SMT exit, supplier 8D claim, and second-source qualification. Report closure is pending implementation verification and effectiveness confirmation of all planned actions."
+  },
+  "meta": {
+    "complaintDate": {
+      "status": "filled",
+      "source": "DEF-00019"
+    },
+    "reportDate": {
+      "status": "filled",
+      "source": "OBS-S1-01, OBS-S1-02"
+    },
+    "customer.articleNr": {
+      "status": "filled",
+      "source": "DEF-00019, DEF-00001, FC-00001"
+    },
+    "customer.articleName": {
+      "status": "filled",
+      "source": "ART-00001"
+    },
+    "customer.drawingIndex": {
+      "status": "filled",
+      "source": "PM-00008"
+    },
+    "customer.complaintNo": {
+      "status": "filled",
+      "source": "engineer edit"
+    },
+    "customer.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter the primary customer contact who raised the complaint (field claims come from FR, DE, US, IT markets)."
+    },
+    "customer.email": {
+      "status": "needs_input",
+      "note": "Provide customer email address."
+    },
+    "customer.phone": {
+      "status": "needs_input",
+      "note": "Provide customer phone number."
+    },
+    "supplier.articleNr": {
+      "status": "filled",
+      "source": "SB-00009, PM-00008"
+    },
+    "supplier.articleName": {
+      "status": "filled",
+      "source": "PM-00008"
+    },
+    "supplier.complaintNo": {
+      "status": "needs_input",
+      "note": "Issue a supplier complaint number to ElektroParts GmbH for batch SB-00009 (B00009)."
+    },
+    "supplier.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter ElektroParts GmbH quality contact for supplier claim."
+    },
+    "supplier.email": {
+      "status": "needs_input",
+      "note": "Enter ElektroParts GmbH email."
+    },
+    "supplier.phone": {
+      "status": "needs_input",
+      "note": "Enter ElektroParts GmbH phone number."
+    },
+    "supplier.drawingIndex": {
+      "status": "filled",
+      "source": "PM-00008"
+    },
+    "problem": {
+      "status": "filled",
+      "source": "DEF-00001 through DEF-00025, FC-00001 through FC-00012, SB-00009, OBS-S1-01, OBS-S1-02, OBS-S1-03"
+    },
+    "failureImages": {
+      "status": "filled",
+      "source": "DEF-00002, DEF-00006, DEF-00015, DEF-00025"
+    },
+    "occurrence": {
+      "status": "suggested",
+      "source": "SB-00009, OBS-S1-01, OBS-S1-02, DEF-00002, DEF-00011, DEF-00013, BN-00003"
+    },
+    "detection": {
+      "status": "suggested",
+      "source": "DEF-00002, DEF-00006, DEF-00015, OBS-S1-01, OBS-S1-02"
+    },
+    "suspect.inProduction": {
+      "status": "suggested",
+      "source": "SB-00009"
+    },
+    "suspect.inWarehouse": {
+      "status": "needs_input",
+      "note": "Check warehouse for remaining uninstalled PM-00008 stock from batch SB-00009 (B00009). Quarantine immediately."
+    },
+    "suspect.inTransit": {
+      "status": "needs_input",
+      "note": "Check logistics for any MC-200 units in transit containing SB-00009 parts."
+    },
+    "suspect.atCustomer": {
+      "status": "filled",
+      "source": "FC-00001, FC-00002, FC-00003, FC-00004, FC-00005, FC-00006, FC-00007, FC-00008, FC-00009, FC-00010, FC-00011, FC-00012"
+    },
+    "immediate.production_stop": {
+      "status": "suggested",
+      "source": "SB-00009, OBS-S1-01"
+    },
+    "immediate.customer_informed": {
+      "status": "needs_input",
+      "note": "Customer notification required for all markets (DE, FR, US, IT) with field-deployed MC-200 units containing SB-00009 parts. Draft communication and get approval."
+    },
+    "immediate.internal_info": {
+      "status": "suggested",
+      "source": "SB-00009, OBS-S1-02"
+    },
+    "immediate.sample_request": {
+      "status": "suggested",
+      "source": "SB-00009, SB-00008"
+    },
+    "immediate.warehouse_sort": {
+      "status": "suggested",
+      "source": "SB-00009, SB-00008, SB-00010"
+    },
+    "immediate.sub_supplier_claim": {
+      "status": "suggested",
+      "source": "SB-00009, SUP-01, OBS-S1-01"
+    },
+    "immediate.derogation": {
+      "status": "suggested",
+      "source": "OBS-S1-01"
+    },
+    "immediate.additional_controls": {
+      "status": "suggested",
+      "source": "OBS-S1-01, BN-00003"
+    },
+    "immediate.other": {
+      "status": "suggested",
+      "source": "FC-00001 through FC-00012, OBS-S1-03"
+    },
+    "plannedOccurrence": {
+      "status": "suggested",
+      "source": "SB-00009, OBS-S1-01, OBS-S1-02"
+    },
+    "plannedDetection": {
+      "status": "suggested",
+      "source": "DEF-00002, DEF-00006, BN-00003"
+    },
+    "implementedOccurrence": {
+      "status": "needs_input",
+      "note": "Record implementation status after planned occurrence actions are executed. Include effectiveness rating based on defect recurrence data."
+    },
+    "implementedDetection": {
+      "status": "needs_input",
+      "note": "Record implementation status after planned detection actions are executed. Include effectiveness rating based on escape rate."
+    },
+    "firstOkPo": {
+      "status": "needs_input",
+      "note": "Enter the first production order built with verified-good PM-00008 batch (SB-00008 or SB-00010 after ESR screening)."
+    },
+    "firstOkDate": {
+      "status": "needs_input",
+      "note": "Enter date of first defect-free production run after containment measures are in place."
+    },
+    "riskOfNewFailure": {
+      "status": "suggested",
+      "source": "SB-00010, OBS-S1-01",
+      "note": "Risk remains until incoming ESR screening is implemented and supplier corrective action is verified. Batch SB-00010 (received 2026-03-01) from same supplier has not been validated."
+    },
+    "preventive.work_instruction": {
+      "status": "suggested",
+      "source": "OBS-S1-01, BN-00003",
+      "note": "Update incoming inspection work instruction for PM-00008 to include ESR test and wetting-balance acceptance criteria."
+    },
+    "preventive.spc": {
+      "status": "suggested",
+      "source": "OBS-S1-01",
+      "note": "Establish SPC chart for ESR values on incoming PM-00008 batches. Set control limits based on SB-00008 (known-good) baseline."
+    },
+    "preventive.control_plan": {
+      "status": "suggested",
+      "source": "BN-00003, OBS-S1-01",
+      "note": "Add C12 solder joint inspection (AOI or visual) to control plan at SMT exit. Add incoming ESR gate for PM-00008."
+    },
+    "preventive.fmea": {
+      "status": "suggested",
+      "source": "OBS-S1-01, OBS-S1-03",
+      "note": "Update process FMEA for MC-200 assembly: add failure mode 'cold-solder-joint on C12 due to supplier lead-finish defect'. Severity=9, Occurrence=4 (batch-dependent), Detection=5 (after AOI added). RPN target < 100."
+    },
+    "preventive.preventive_maintenance": {
+      "status": "suggested",
+      "source": "OBS-S1-01",
+      "note": "Root cause is supplier material, not equipment \\u2014 PM not applicable."
+    },
+    "preventive.other": {
+      "status": "suggested",
+      "source": "SB-00009, SUP-01",
+      "note": "Conduct supplier audit at ElektroParts GmbH focused on lead-finish process, incoming material controls, and outgoing QA. Require PPAP resubmission for PM-00008."
+    },
+    "transferredToSimilar": {
+      "status": "suggested",
+      "source": "SB-00009, OBS-S1-01",
+      "note": "Lessons learned should be applied to all ElektroParts GmbH supplied capacitor types and to any other single-source SMT components."
+    },
+    "otherPartsAffected": {
+      "status": "suggested",
+      "source": "SUP-01",
+      "note": "Other capacitor variants from ElektroParts GmbH should be assessed for the same lead-finish risk."
+    },
+    "otherPartsWhich": {
+      "status": "needs_input",
+      "note": "List all other part numbers supplied by ElektroParts GmbH (SUP-01). Check if any other capacitor/passive component from this supplier is used in MC-200 or other articles."
+    },
+    "champion": {
+      "status": "needs_input",
+      "note": "Assign the 8D champion (typically Quality Manager or Plant Manager). No manager names available in Manex."
+    },
+    "coordinator": {
+      "status": "needs_input",
+      "note": "Assign the 8D coordinator (typically the quality engineer leading this investigation)."
+    },
+    "team": {
+      "status": "suggested",
+      "source": "RW-00006, RW-00002, RW-00015, RW-00016",
+      "note": "user_042, user_071, user_023 performed most rework on this defect cluster. Named roles (Incoming QC, SQA, SMT Process) need real names assigned."
+    },
+    "appreciation": {
+      "status": "suggested",
+      "source": "OBS-S1-01, OBS-S1-02, OBS-S1-03, SB-00009, DEF-00001 through DEF-00025, FC-00001 through FC-00012"
+    }
+  },
+  "savedAt": "2026-04-18T22:20:37.947Z"
+}

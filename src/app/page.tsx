@@ -11,6 +11,11 @@ import { Badge, severityVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ParetoChart } from "@/components/pareto-chart";
 import { manex, type DefectDetail } from "@/lib/manex";
+import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
+import {
+  DefectTrendChart,
+  type TrendBucket,
+} from "@/components/dashboard/defect-trend-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -58,11 +63,86 @@ async function getRecentDefects(): Promise<DefectDetail[]> {
   try {
     return await manex<DefectDetail[]>("/v_defect_detail", {
       order: "defect_ts.desc",
-      limit: 8,
+      limit: 5,
     });
   } catch {
     return [];
   }
+}
+
+/**
+ * Weekly count + cost rollup for the last 26 weeks — feeds the dual-axis
+ * dashboard trend line.
+ */
+async function getWeeklyTrend(): Promise<TrendBucket[]> {
+  try {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - 26 * 7);
+    since.setUTCHours(0, 0, 0, 0);
+    const rows = await manex<
+      Array<{ defect_ts?: string | null; cost?: number | null }>
+    >("/v_defect_detail", {
+      select: "defect_ts,cost",
+      order: "defect_ts.desc",
+      limit: 5000,
+      defect_ts: `gte.${since.toISOString().slice(0, 10)}`,
+    });
+    const buckets = new Map<string, { defects: number; costEur: number }>();
+    for (const r of rows) {
+      const when = r.defect_ts;
+      if (!when) continue;
+      const d = new Date(when);
+      if (Number.isNaN(d.getTime())) continue;
+      const { key } = isoWeek(d);
+      const cur = buckets.get(key) ?? { defects: 0, costEur: 0 };
+      cur.defects += 1;
+      cur.costEur += Number(r.cost ?? 0);
+      buckets.set(key, cur);
+    }
+
+    // Fill missing weeks inside the window with zeros so the line is
+    // continuous instead of skipping gaps.
+    const out: TrendBucket[] = [];
+    const cursor = mondayOf(since);
+    const end = mondayOf(new Date());
+    while (cursor <= end) {
+      const { key, label } = isoWeek(cursor);
+      const cur = buckets.get(key) ?? { defects: 0, costEur: 0 };
+      out.push({
+        weekStart: cursor.toISOString().slice(0, 10),
+        weekLabel: label,
+        defects: cur.defects,
+        costEur: Math.round(cur.costEur * 100) / 100,
+      });
+      cursor.setUTCDate(cursor.getUTCDate() + 7);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+function mondayOf(d: Date): Date {
+  const out = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  // JS: 0=Sun .. 6=Sat. ISO week starts Mon.
+  const day = out.getUTCDay();
+  const shift = (day + 6) % 7; // 0 for Mon, 6 for Sun
+  out.setUTCDate(out.getUTCDate() - shift);
+  out.setUTCHours(0, 0, 0, 0);
+  return out;
+}
+
+function isoWeek(d: Date): { key: string; label: string } {
+  // ISO week-numbering per https://en.wikipedia.org/wiki/ISO_week_date
+  const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = t.getUTCDay() || 7; // Mon=1..Sun=7
+  t.setUTCDate(t.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(
+    ((t.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7,
+  );
+  const label = `${t.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+  return { key: label, label };
 }
 
 async function getCounts() {
@@ -84,10 +164,11 @@ async function getCounts() {
 }
 
 export default async function Home() {
-  const [pareto, defects, counts] = await Promise.all([
+  const [pareto, defects, counts, trend] = await Promise.all([
     getPareto(),
     getRecentDefects(),
     getCounts(),
+    getWeeklyTrend(),
   ]);
 
   const apiOk = pareto.total > 0 || defects.length > 0;
@@ -108,12 +189,13 @@ export default async function Home() {
             so you can spot the pattern before you close the ticket.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
             <Link href="/incidents">
               Browse incidents <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
+          <NewAnalysisButton variant="outline" />
           <Button asChild>
             <Link href="/report/new">New 8D report</Link>
           </Button>
@@ -177,7 +259,7 @@ export default async function Home() {
         <Card>
           <CardHeader>
             <CardTitle>Recent defects</CardTitle>
-            <CardDescription>Latest 8 rows from v_defect_detail.</CardDescription>
+            <CardDescription>Latest 5 defects on the shop floor.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {defects.length ? (
@@ -215,13 +297,18 @@ export default async function Home() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Next up</CardTitle>
+          <CardTitle>Defects &amp; cost — last 6 months</CardTitle>
           <CardDescription>
-            This scaffold has the data layer wired. Upcoming: fault tree, BOM
-            traceability, Sankey (supplier → batch → defect), operator Pareto,
-            and the S³ agent with SQL + wiki tools.
+            Weekly defect count (
+            <span className="font-semibold text-[color:#2563eb]">blue</span>)
+            against inflicted cost in € (
+            <span className="font-semibold text-[color:#eab308]">yellow</span>).
+            Missing weeks are filled with zero.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <DefectTrendChart data={trend} />
+        </CardContent>
       </Card>
     </div>
   );
