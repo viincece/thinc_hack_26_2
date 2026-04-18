@@ -36,30 +36,64 @@ export function ReportToc({ items }: { items: TocItem[] }) {
   }, []);
 
   useEffect(() => {
-    const elements = items
-      .map((i) => document.getElementById(i.id))
-      .filter((el): el is HTMLElement => !!el);
-    if (!elements.length) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        // Pick the most "on-screen" entry — handy when two sections are
-        // visible at once; the one occupying more of the viewport wins.
-        let best: IntersectionObserverEntry | null = null;
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
-        }
-        if (best) setActive(best.target.id);
-      },
-      {
-        // Trigger in the top third of the viewport so the chosen entry
-        // aligns with where the reader is looking.
-        rootMargin: "-10% 0px -60% 0px",
-        threshold: [0, 0.1, 0.3, 0.6, 1],
-      },
-    );
-    for (const el of elements) obs.observe(el);
-    return () => obs.disconnect();
+    const entries = items
+      .map((i) => {
+        const el = document.getElementById(i.id);
+        return el ? { id: i.id, el } : null;
+      })
+      .filter((x): x is { id: string; el: HTMLElement } => !!x);
+    if (!entries.length) return;
+
+    // Scroll-driven selection. We pick the last section whose top has
+    // crossed an imaginary anchor line 25% from the top of the viewport —
+    // this mirrors what the reader is looking at and stays monotonic as
+    // the page scrolls, so the indicator doesn't ping-pong between two
+    // sections that straddle an IntersectionObserver band.
+    let rafId = 0;
+    let scheduled = false;
+    let current = active;
+
+    const pick = () => {
+      scheduled = false;
+      const anchor = window.scrollY + window.innerHeight * 0.25;
+      let chosen = entries[0]!.id;
+      for (const { id, el } of entries) {
+        // Recompute absolute top each frame so dynamic layouts still work.
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        if (top - 4 <= anchor) chosen = id;
+      }
+      // Bottom-of-page clamp: if the user has scrolled to the end, force
+      // the last section active so the indicator doesn't get stuck on the
+      // penultimate one just because it has the tallest content.
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2
+      ) {
+        chosen = entries[entries.length - 1]!.id;
+      }
+      if (chosen !== current) {
+        current = chosen;
+        setActive(chosen);
+      }
+    };
+
+    const onScroll = () => {
+      if (scheduled) return;
+      scheduled = true;
+      rafId = requestAnimationFrame(pick);
+    };
+
+    pick();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    // `active` is intentionally excluded — we track it locally in `current`
+    // so the listener doesn't have to re-install on every selection change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   const toggle = () => {
@@ -118,7 +152,7 @@ export function ReportToc({ items }: { items: TocItem[] }) {
                 href={`#${i.id}`}
                 title={`${i.num}. ${i.label}`}
                 className={cn(
-                  "flex items-center gap-2 rounded px-1.5 py-1 text-[11px] leading-tight transition-colors",
+                  "flex items-center gap-2 rounded px-1.5 py-1 text-[11px] leading-tight transition-[background-color,color] duration-200 ease-out",
                   isActive
                     ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200"
                     : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900",
@@ -126,7 +160,7 @@ export function ReportToc({ items }: { items: TocItem[] }) {
               >
                 <span
                   className={cn(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold transition-[background-color,color] duration-200 ease-out",
                     isActive
                       ? "bg-emerald-600 text-white"
                       : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",

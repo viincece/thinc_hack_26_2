@@ -57,7 +57,9 @@ async function factsFor(
       },
     };
   }
-  const rows = await manex<DefectDetail[]>("/v_defect_detail", {
+  const rows = await manex<
+    Array<DefectDetail & { defect_ts?: string; product_build_ts?: string }>
+  >("/v_defect_detail", {
     defect_id: `eq.${defectId}`,
     limit: 1,
   });
@@ -149,7 +151,10 @@ async function factsFor(
       occurrence_section_name: d.occurrence_section_name,
       detected_section_name: d.detected_section_name,
       cost_eur: d.cost,
-      ts: d.ts,
+      // v_defect_detail exposes the defect timestamp as `defect_ts`; the
+      // flat `defect` table uses `ts`. Accept either so this stays robust
+      // regardless of which query path we ever land on.
+      ts: d.defect_ts ?? d.ts,
       notes: d.notes ?? undefined,
       rework_text,
       rework_user,

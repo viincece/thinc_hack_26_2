@@ -1,0 +1,516 @@
+{
+  "id": "IR-260419-WKO7",
+  "name": "Kondensator 100uF X7R — incident analysis",
+  "generatedAt": "2026-04-18T23:30:01.214Z",
+  "source": {
+    "draftId": "8D-260419-TO8I",
+    "draftName": "Kondensator 100uF X7R",
+    "defect_id": "DEF-00019"
+  },
+  "facts": {
+    "defect_id": "DEF-00019",
+    "defect_code": "SOLDER_COLD",
+    "severity": "critical",
+    "article_id": "ART-00001",
+    "article_name": "Motor Controller MC-200",
+    "product_id": "PRD-00021",
+    "reported_part_number": "PM-00008",
+    "reported_part_title": "Kondensator 100uF X7R",
+    "occurrence_section_name": "Montage Linie 1",
+    "detected_section_name": "Pruefung Linie 2",
+    "cost_eur": 125.44,
+    "ts": "2026-01-26T07:13:39.928012+00:00",
+    "notes": "Excessive solder at C12 site. Supplier rework visible under scope.",
+    "rework_text": "swap C12 cap with the supplier replacement. run funct. behavior check afterwards.",
+    "rework_user": "user_023",
+    "similar_count": 33,
+    "field_claims_count": 1
+  },
+  "risk": {
+    "value": 100,
+    "band": "critical",
+    "rationale": [
+      "Severity critical → base 85",
+      "33 similar defects in last 12 wk → ×1.92",
+      "Customer field claim on record → ×1.50"
+    ]
+  },
+  "cost": {
+    "defectCostEur": 125.44,
+    "reworkCostEur": 85.3,
+    "claimCostEur": 357.76,
+    "totalEur": 568.5,
+    "rationale": [
+      "Defect cost € 125.44",
+      "Rework labour € 85.30",
+      "Field claims € 357.76"
+    ]
+  },
+  "faultTree": {
+    "id": "root",
+    "kind": "defect",
+    "label": "SOLDER_COLD on Motor Controller MC-200",
+    "detail": "Excessive solder at C12 site. Supplier rework visible under scope.",
+    "children": [
+      {
+        "id": "cat_Material",
+        "kind": "category",
+        "label": "Material",
+        "children": [
+          {
+            "id": "part_PM-00008",
+            "kind": "concept",
+            "label": "Part PM-00008",
+            "detail": "Kondensator 100uF X7R",
+            "confidence": "high"
+          }
+        ]
+      },
+      {
+        "id": "cat_Machine",
+        "kind": "category",
+        "label": "Machine",
+        "children": [
+          {
+            "id": "machine_section",
+            "kind": "concept",
+            "label": "Produced at Montage Linie 1",
+            "detail": "occurrence_section_id",
+            "confidence": "high"
+          }
+        ]
+      },
+      {
+        "id": "cat_Method",
+        "kind": "category",
+        "label": "Method",
+        "children": [
+          {
+            "id": "method_rework",
+            "kind": "concept",
+            "label": "Rework was required",
+            "detail": "swap C12 cap with the supplier replacement. run funct. behavior check afterwards.",
+            "confidence": "medium"
+          }
+        ]
+      },
+      {
+        "id": "cat_Man",
+        "kind": "category",
+        "label": "Man",
+        "children": [
+          {
+            "id": "man_operator",
+            "kind": "concept",
+            "label": "Operator user_023",
+            "detail": "performed the rework",
+            "confidence": "medium"
+          }
+        ]
+      },
+      {
+        "id": "cat_Measurement",
+        "kind": "category",
+        "label": "Measurement",
+        "children": [
+          {
+            "id": "test_TR-000081",
+            "kind": "concept",
+            "label": "ESR_TEST: FAIL",
+            "detail": "ESR-Messung Kondensator · value 0.6069603375035162Ohm · limits 0.0000 / 0.5000",
+            "confidence": "high",
+            "children": [
+              {
+                "id": "test_TR-000081_row",
+                "kind": "evidence",
+                "label": "TR-000081",
+                "detail": "test_result row",
+                "confidence": "high"
+              }
+            ]
+          },
+          {
+            "id": "test_TR-000084",
+            "kind": "concept",
+            "label": "VISUAL_CHECK: MARGINAL",
+            "detail": "Sichtpruefung",
+            "confidence": "medium",
+            "children": [
+              {
+                "id": "test_TR-000084_row",
+                "kind": "evidence",
+                "label": "TR-000084",
+                "detail": "test_result row",
+                "confidence": "high"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cat_Recurrence",
+        "kind": "category",
+        "label": "Recurrence",
+        "children": [
+          {
+            "id": "rec_count",
+            "kind": "evidence",
+            "label": "33 similar SOLDER_COLD events in last 12 wk",
+            "detail": "same defect_code, different defect_id",
+            "confidence": "high"
+          },
+          {
+            "id": "rec_claims",
+            "kind": "evidence",
+            "label": "1 field claim on this product",
+            "detail": "customer-facing",
+            "confidence": "high"
+          }
+        ]
+      }
+    ]
+  },
+  "bomTree": {
+    "id": "art_ART-00001",
+    "label": "Article ART-00001",
+    "children": [
+      {
+        "id": "BN-00010",
+        "label": "Gehaeuse_IO · null",
+        "part_number": null,
+        "find_number": "Gehaeuse_IO",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00011",
+            "label": "H1 · PM-00011",
+            "part_number": "PM-00011",
+            "find_number": "H1",
+            "defects_count": 0,
+            "highlight": null,
+            "children": []
+          },
+          {
+            "id": "BN-00012",
+            "label": "J1 · PM-00010",
+            "part_number": "PM-00010",
+            "find_number": "J1",
+            "defects_count": 3,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00013",
+            "label": "SCR · PM-00012",
+            "part_number": "PM-00012",
+            "find_number": "SCR",
+            "defects_count": 0,
+            "highlight": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "BN-00006",
+        "label": "Leistungsstufe · null",
+        "part_number": null,
+        "find_number": "Leistungsstufe",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00007",
+            "label": "C5 · PM-00002",
+            "part_number": "PM-00002",
+            "find_number": "C5",
+            "defects_count": 9,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00008",
+            "label": "D1 · PM-00009",
+            "part_number": "PM-00009",
+            "find_number": "D1",
+            "defects_count": 13,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00009",
+            "label": "K1 · PM-00017",
+            "part_number": "PM-00017",
+            "find_number": "K1",
+            "defects_count": 13,
+            "highlight": "watch",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "BN-00001",
+        "label": "Steuerplatine · null",
+        "part_number": null,
+        "find_number": "Steuerplatine",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00003",
+            "label": "C12 · PM-00008",
+            "part_number": "PM-00008",
+            "find_number": "C12",
+            "defects_count": 35,
+            "highlight": "root_cause",
+            "children": []
+          },
+          {
+            "id": "BN-00004",
+            "label": "R33 · PM-00015",
+            "part_number": "PM-00015",
+            "find_number": "R33",
+            "defects_count": 5,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00002",
+            "label": "U1 · PM-00006",
+            "part_number": "PM-00006",
+            "find_number": "U1",
+            "defects_count": 14,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00005",
+            "label": "U2 · PM-00007",
+            "part_number": "PM-00007",
+            "find_number": "U2",
+            "defects_count": 14,
+            "highlight": "watch",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "ts": "2026-01-26 07:13:39.928012+00",
+      "kind": "defect",
+      "id": "DEF-00019",
+      "label": "SOLDER_COLD · DEF-00019",
+      "severity": "critical"
+    },
+    {
+      "ts": "2026-01-28 06:03:15.033996+00",
+      "kind": "rework",
+      "id": "RW-00019",
+      "label": "swap C12 cap with the supplier replacement. run funct. behav"
+    },
+    {
+      "ts": "2026-02-05 02:14:19.367221+00",
+      "kind": "build",
+      "id": "PRD-00021",
+      "label": "Built PRD-00021"
+    },
+    {
+      "ts": "2026-03-05 02:14:19.367221+00",
+      "kind": "claim",
+      "id": "FC-00006",
+      "label": "Urgent issue with MC-200 motor controllers. After about 3 we"
+    }
+  ],
+  "costTimeline": [
+    {
+      "weekStart": "2025-10-27",
+      "defectEur": 340.54,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-11-17",
+      "defectEur": 198.36,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-11-24",
+      "defectEur": 117.68,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-08",
+      "defectEur": 89.78,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-15",
+      "defectEur": 321.41,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-22",
+      "defectEur": 204.52,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-29",
+      "defectEur": 90.97,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-01-05",
+      "defectEur": 280.53,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-01-12",
+      "defectEur": 0,
+      "claimEur": 586.92
+    },
+    {
+      "weekStart": "2026-01-26",
+      "defectEur": 3294.18,
+      "claimEur": 1280.12
+    },
+    {
+      "weekStart": "2026-02-02",
+      "defectEur": 1787.04,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-02-09",
+      "defectEur": 645.54,
+      "claimEur": 2685.81
+    },
+    {
+      "weekStart": "2026-02-16",
+      "defectEur": 248.39,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-02-23",
+      "defectEur": 0,
+      "claimEur": 1042.36
+    },
+    {
+      "weekStart": "2026-03-02",
+      "defectEur": 61.69,
+      "claimEur": 2653.41
+    },
+    {
+      "weekStart": "2026-03-09",
+      "defectEur": 34.98,
+      "claimEur": 5248.81
+    },
+    {
+      "weekStart": "2026-03-16",
+      "defectEur": 372.25,
+      "claimEur": 2507.77
+    },
+    {
+      "weekStart": "2026-03-23",
+      "defectEur": 142.71,
+      "claimEur": 1211.26
+    },
+    {
+      "weekStart": "2026-03-30",
+      "defectEur": 240.31,
+      "claimEur": 3966.15
+    }
+  ],
+  "resolution": {
+    "sampleSize": 4,
+    "meanDaysToClose": 7.7,
+    "medianDaysToClose": 10.6,
+    "actionTypes": [
+      {
+        "type": "initiate_8d",
+        "count": 2
+      },
+      {
+        "type": "containment",
+        "count": 1
+      },
+      {
+        "type": "corrective",
+        "count": 1
+      }
+    ],
+    "topActions": [
+      {
+        "text": "Zwischenstand: Ursachensuche laeuft.",
+        "count": 1
+      },
+      {
+        "text": "Abschluss dokumentiert, Wirksamkeit zu pruefen.",
+        "count": 1
+      }
+    ]
+  },
+  "prevention": {
+    "summary": "This incident is the latest of 7 `SOLDER_COLD` events in the recent 12 weeks. 1 field claim on the same product — treat as customer-facing.",
+    "steps": [
+      {
+        "title": "Audit Montage Linie 1",
+        "detail": "On-line audit of SOP + setup parameters for the occurrence section. Verify calibration record of any automated equipment.",
+        "owner": "Process engineering"
+      },
+      {
+        "title": "Add SOLDER_COLD check to incoming + in-process inspection",
+        "detail": "Add a visual / functional gate for `SOLDER_COLD` at the earliest section where it can be detected. Update control plan and FMEA.",
+        "owner": "Quality engineering"
+      },
+      {
+        "title": "Cross-reference similar articles",
+        "detail": "Scan the BOM for components sharing the suspect part — apply containment to every article that uses it.",
+        "owner": "Quality engineering"
+      },
+      {
+        "title": "Schedule effectiveness review",
+        "detail": "4-week follow-up: defect rate for `SOLDER_COLD` should drop below the 12-week baseline by ≥ 50 %.",
+        "owner": "Quality manager"
+      }
+    ],
+    "similarIncidents": [
+      {
+        "defect_id": "DEF-00077",
+        "ts": "2026-03-31 02:01:44.775553+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "high"
+      },
+      {
+        "defect_id": "DEF-00090",
+        "ts": "2026-03-26 07:24:49.758134+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "medium"
+      },
+      {
+        "defect_id": "DEF-00150",
+        "ts": "2026-03-22 13:25:57.123166+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "low"
+      },
+      {
+        "defect_id": "DEF-00124",
+        "ts": "2026-03-05 13:52:19.47173+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "medium"
+      },
+      {
+        "defect_id": "DEF-00138",
+        "ts": "2026-02-17 09:26:12.271964+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "low"
+      },
+      {
+        "defect_id": "DEF-00133",
+        "ts": "2026-02-11 17:42:01.113563+00",
+        "defect_code": "SOLDER_COLD",
+        "severity": "critical"
+      }
+    ],
+    "openInitiatives": []
+  }
+}
