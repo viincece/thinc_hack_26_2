@@ -1,26 +1,4 @@
-export const SECTIONS = [
-  "D1",
-  "D2",
-  "D3",
-  "D4",
-  "D5",
-  "D6",
-  "D7",
-  "D8",
-] as const;
-
-export type Section = (typeof SECTIONS)[number];
-
-export const SECTION_TITLES: Record<Section, string> = {
-  D1: "Team",
-  D2: "Problem description",
-  D3: "Interim containment",
-  D4: "Root cause analysis",
-  D5: "Corrective actions",
-  D6: "Verify effectiveness",
-  D7: "Prevent recurrence",
-  D8: "Closure & recognition",
-};
+import type { FieldStatus } from "./eight-d-doc";
 
 export type InitiativeDraft = {
   product_id: string;
@@ -30,6 +8,15 @@ export type InitiativeDraft = {
   title: string;
   details: string;
   due_date?: string;
+};
+
+export type FieldPatchEvent = {
+  type: "update_report_field";
+  path: string;
+  value: unknown;
+  status: FieldStatus;
+  source?: string;
+  note?: string;
 };
 
 export type AgentEvent =
@@ -47,7 +34,7 @@ export type AgentEvent =
       type: "ui";
       event:
         | { type: "propose_initiative"; payload: InitiativeDraft }
-        | { type: "update_report_section"; section: string; markdown: string };
+        | FieldPatchEvent;
     }
   | { type: "error"; message: string }
   | { type: "done" };

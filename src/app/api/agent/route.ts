@@ -87,8 +87,9 @@ export async function POST(req: Request) {
       }
 
       try {
-        // Hard cap on tool-use iterations to avoid runaway loops.
-        for (let turn = 0; turn < 8; turn++) {
+        // Hard cap on tool-use iterations. 16 gives auto-draft enough rope
+        // to visit every section without risking a runaway loop.
+        for (let turn = 0; turn < 16; turn++) {
           const resp = await client.messages.create({
             model: AGENT_MODEL,
             max_tokens: 4096,

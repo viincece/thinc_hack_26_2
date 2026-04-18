@@ -150,6 +150,10 @@ const nodeTypes = { kg: NodeCard };
  * hackathon scale because it produces a predictable, scan-able layout the
  * user can navigate by kind.
  */
+// Lane order is read left-to-right. Placing Concept *before* DefectCode /
+// TestCode means INDICATED_BY edges (Concept -> DefectCode / TestCode) flow
+// forward instead of looping back — this removes the visual stubs on the
+// right side of DefectCode / TestCode nodes.
 const LANE_ORDER = [
   "Factory",
   "Line",
@@ -161,9 +165,9 @@ const LANE_ORDER = [
   "Supplier",
   "Operator",
   "Order",
+  "Concept",
   "DefectCode",
   "TestCode",
-  "Concept",
   "Report",
   "Observation",
   "Source",

@@ -2,6 +2,13 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { safeSelect, SqlGuardError } from "@/lib/db";
 import { manex, type DefectDetail } from "@/lib/manex";
 import { KG_TOOLS, runKgTool } from "@/lib/kg/tools";
+import {
+  FIELD_PATHS,
+  isFieldPath,
+  type FieldStatus,
+} from "@/components/copilot/eight-d-doc";
+
+const FIELD_PATHS_LIST = FIELD_PATHS.map((p) => `  - ${p}`).join("\n");
 
 /* -------------------------------------------------------------- *
  *  Tool schemas (sent to Claude)
@@ -119,20 +126,71 @@ export const TOOLS: Anthropic.Tool[] = [
   },
   ...KG_TOOLS,
   {
-    name: "update_report_section",
+    name: "update_report_field",
     description:
-      "Write markdown into a section of the 8D editor the engineer is " +
-      "looking at. Overwrites the prior content of that section.",
+      "Write a single structured field of the 8D editor. The editor renders " +
+      "forms, not free-text — you must patch by field path. Always prefer " +
+      "making the call (even with status='needs_input' + a short note) over " +
+      "skipping a field: the user needs to see the agent's work.\n\n" +
+      "Grounding contract:\n" +
+      "- 'filled'    — direct fact from the wiki/Manex; include a `source` (row IDs).\n" +
+      "- 'suggested' — informed inference; include closest evidence as `source`.\n" +
+      "- 'needs_input' — data can't answer it (signatures, external contacts, future dates, " +
+      "human judgement). Leave `value` null; write a short `note` saying what to gather.\n\n" +
+      "Soft-fail: if you forget `source` the patch is still applied but downgraded to " +
+      "'suggested' with a warning. NEVER invent IDs, names, numbers, or dates — when " +
+      "in doubt use 'needs_input'.\n\n" +
+      "Allowed paths:\n" +
+      FIELD_PATHS_LIST +
+      "\n\n" +
+      "Value shapes:\n" +
+      "- complaintDate, reportDate, firstOkDate, *.dueDate, *.endDate, *.date → ISO date string 'YYYY-MM-DD'.\n" +
+      "- customer.*, supplier.* fields (complaintNo, articleNr, articleName, drawingIndex, contactPerson, email, phone) → string.\n" +
+      "- problem, firstOkPo, otherPartsWhich, appreciation → string.\n" +
+      "- champion, coordinator → object {name, department, contact}.\n" +
+      "- team → array of {name, department, contact}.\n" +
+      "- failureImages → array of {name, dataUrl?}.\n" +
+      "- suspect.* → {qty, conducted: boolean, reference}.\n" +
+      "- immediate.* → {enabled: boolean, responsible, dueDate, description, effectiveness: number}.\n" +
+      "- occurrence, detection → {categories: SixM[], potentialCause, whys: string[5], rootCauses: [{text, participation: number}]}.\n" +
+      "  SixM ∈ {Man, Machine, Material, Method, Environment, Measurement}.\n" +
+      "- plannedOccurrence, plannedDetection → array of {rootCauseNo, description, responsible, date}.\n" +
+      "- implementedOccurrence, implementedDetection → array of {rootCauseNo, description, date, effectiveness: number, note}.\n" +
+      "- preventive.* → {applicable: 'yes'|'no', responsible, dueDate, endDate}.\n" +
+      "- riskOfNewFailure, transferredToSimilar, otherPartsAffected → 'yes' | 'no' | ''.\n",
     input_schema: {
       type: "object",
       properties: {
-        section: {
+        path: {
           type: "string",
-          enum: ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+          description: "Exactly one of the whitelisted paths.",
         },
-        markdown: { type: "string" },
+        value: {
+          description:
+            "The field value, shaped per the allowed-paths table. Omit or null for status='needs_input'.",
+        },
+        status: {
+          type: "string",
+          enum: ["filled", "suggested", "needs_input"],
+          description:
+            "filled = fact from data. suggested = informed guess, needs human verification. needs_input = data cannot answer this field.",
+        },
+        source: {
+          type: "string",
+          description:
+            "Comma-separated row IDs / Observation IDs (DEF-…, OBS-…, ART-…, SB-…, PM-…, etc.) that justify the value. REQUIRED when status is 'filled' or 'suggested'.",
+        },
+        note: {
+          type: "string",
+          description:
+            "Short explanation. REQUIRED when status='needs_input' — tell the engineer what they need to gather.",
+        },
+        purpose: {
+          type: "string",
+          description: "One sentence summary for the chat pane.",
+        },
       },
-      required: ["section", "markdown"],
+      required: ["path", "status"],
     },
   },
 ];
@@ -148,7 +206,14 @@ export type ToolResult =
 
 export type UiEvent =
   | { type: "propose_initiative"; payload: InitiativeDraft }
-  | { type: "update_report_section"; section: string; markdown: string };
+  | {
+      type: "update_report_field";
+      path: string;
+      value: unknown;
+      status: FieldStatus;
+      source?: string;
+      note?: string;
+    };
 
 export type InitiativeDraft = {
   product_id: string;
@@ -178,8 +243,8 @@ export async function runTool(
         return await toolRunAnalysis(input);
       case "propose_initiative":
         return toolProposeInitiative(input);
-      case "update_report_section":
-        return toolUpdateReportSection(input);
+      case "update_report_field":
+        return toolUpdateReportField(input);
       default:
         return { ok: false, error: `Unknown tool: ${name}` };
     }
@@ -245,16 +310,84 @@ function toolProposeInitiative(input: ToolInput): ToolResult {
   };
 }
 
-function toolUpdateReportSection(input: ToolInput): ToolResult {
-  const section = String(input.section ?? "");
-  const markdown = String(input.markdown ?? "");
-  if (!/^D[1-8]$/.test(section)) {
-    return { ok: false, error: "section must be D1..D8" };
+function toolUpdateReportField(input: ToolInput): ToolResult {
+  const path = String(input.path ?? "");
+  if (!path) return { ok: false, error: "Missing path" };
+  if (!isFieldPath(path)) {
+    return {
+      ok: false,
+      error:
+        `Unknown field path: ${path}. Must be exactly one of the whitelisted paths in the tool description.`,
+    };
   }
+  const rawStatus = String(input.status ?? "") as FieldStatus;
+  if (!["filled", "suggested", "needs_input"].includes(rawStatus)) {
+    return {
+      ok: false,
+      error: "status must be 'filled', 'suggested', or 'needs_input'",
+    };
+  }
+
+  const source =
+    typeof input.source === "string" && input.source.trim()
+      ? input.source.trim()
+      : undefined;
+  const rawNote =
+    typeof input.note === "string" && input.note.trim()
+      ? input.note.trim()
+      : undefined;
+
+  let status: FieldStatus = rawStatus;
+  let value = input.value;
+  let note = rawNote;
+  let source_out = source;
+  const warnings: string[] = [];
+
+  // Soft-fail grounding guardrails: every call still produces a visible UI
+  // patch so the user sees the agent's work, but we downgrade status when
+  // the agent didn't supply the evidence the rules require.
+  if (status === "filled" || status === "suggested") {
+    const hasValue =
+      value !== undefined &&
+      value !== null &&
+      !(typeof value === "string" && value.trim() === "");
+
+    if (!hasValue) {
+      warnings.push("value was empty — downgraded to needs_input");
+      status = "needs_input";
+      if (!note) note = "Agent did not supply a value for this field.";
+      value = null;
+      source_out = source_out ?? undefined;
+    } else if (!source_out) {
+      warnings.push(
+        "no `source` supplied — downgraded to suggested (review needed)",
+      );
+      status = "suggested";
+      source_out = "unverified: no row IDs cited";
+    }
+  } else {
+    // needs_input
+    if (!note) note = "Engineer must fill this field.";
+    value = null;
+  }
+
   return {
     ok: true,
-    data: { status: "written", section, length: markdown.length },
-    ui_event: { type: "update_report_section", section, markdown },
+    data: {
+      ok: true,
+      path,
+      applied_status: status,
+      requested_status: rawStatus,
+      warnings,
+    },
+    ui_event: {
+      type: "update_report_field",
+      path,
+      value,
+      status,
+      source: source_out,
+      note,
+    },
   };
 }
 
