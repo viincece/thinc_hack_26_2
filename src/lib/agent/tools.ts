@@ -266,8 +266,63 @@ async function toolSqlQuery(input: ToolInput): Promise<ToolResult> {
   } catch (e) {
     if (e instanceof SqlGuardError) return { ok: false, error: e.message };
     const msg = e instanceof Error ? e.message : String(e);
-    return { ok: false, error: msg };
+
+    // Auto-describe: if Postgres rejected an unknown column or relation,
+    // fetch the real column list for the referenced table and return it in
+    // the error so the agent can self-correct in the very next turn.
+    const hint = await autoDescribeHint(sql, msg).catch(() => null);
+    return {
+      ok: false,
+      error: hint ? `${msg}\n\n${hint}` : msg,
+    };
   }
+}
+
+async function autoDescribeHint(sql: string, errMsg: string): Promise<string | null> {
+  // Recognize the two common "you invented a column / table" errors.
+  const colMatch = errMsg.match(/column "?([\w.]+)"? does not exist/i);
+  const relMatch = errMsg.match(/relation "?([\w.]+)"? does not exist/i);
+
+  const target = colMatch?.[1] ?? relMatch?.[1] ?? null;
+
+  // Pick the table name to describe: prefer the table mentioned in FROM/JOIN,
+  // falling back to the missing relation name.
+  const fromMatch = sql.match(/\bfrom\s+([a-z_][\w.]*)/i);
+  const tables = new Set<string>();
+  if (fromMatch?.[1]) tables.add(fromMatch[1].split(".").pop()!.toLowerCase());
+  for (const m of sql.matchAll(/\bjoin\s+([a-z_][\w.]*)/gi)) {
+    if (m[1]) tables.add(m[1].split(".").pop()!.toLowerCase());
+  }
+  if (relMatch?.[1]) tables.add(relMatch[1].toLowerCase());
+  if (colMatch?.[1]?.includes(".")) {
+    const [tbl] = colMatch[1].split(".");
+    if (tbl) tables.add(tbl.toLowerCase());
+  }
+
+  if (tables.size === 0) return target ? `Check that '${target}' exists.` : null;
+
+  const lines: string[] = [
+    "SELF-CORRECT: the columns actually available on the tables you referenced are:",
+  ];
+  for (const t of tables) {
+    try {
+      const { rows } = await safeSelect(
+        `SELECT column_name FROM information_schema.columns
+           WHERE table_schema='public' AND table_name='${t.replace(/[^a-z0-9_]/gi, "")}'
+           ORDER BY ordinal_position`,
+      );
+      const cols = (rows as Array<{ column_name: string }>)
+        .map((r) => r.column_name)
+        .join(", ");
+      lines.push(`- ${t}: ${cols || "(no such table)"}`);
+    } catch {
+      lines.push(`- ${t}: (unable to introspect)`);
+    }
+  }
+  lines.push(
+    "Rewrite your SQL using ONLY these column names. Do not invent columns.",
+  );
+  return lines.join("\n");
 }
 
 async function toolRunAnalysis(input: ToolInput): Promise<ToolResult> {

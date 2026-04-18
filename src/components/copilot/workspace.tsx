@@ -316,6 +316,29 @@ export function ReportWorkspace({
     [doc, meta, draftId, deriveDefaultName],
   );
 
+  const triggerDownload = useCallback((blob: Blob, filename: string) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 0);
+  }, []);
+
+  const buildExportFilename = useCallback(
+    (ext: "json" | "pdf" | "docx") => {
+      const base =
+        (draftName || deriveDefaultName(doc))
+          .replace(/[^A-Za-z0-9-_ ]+/g, "")
+          .trim()
+          .replace(/\s+/g, "-")
+          .slice(0, 48) || "8d-draft";
+      const idPart = draftId ? `_${draftId}` : "";
+      const date = new Date().toISOString().slice(0, 10);
+      return `8D_${date}${idPart}_${base}.${ext}`;
+    },
+    [doc, draftId, draftName, deriveDefaultName],
+  );
+
   const onExportCurrent = useCallback(() => {
     const payload = {
       id: draftId ?? `unsaved-${Date.now()}`,
@@ -327,12 +350,46 @@ export function ReportWorkspace({
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${payload.name.replace(/[^A-Za-z0-9-_]+/g, "-").slice(0, 48) || "8d-draft"}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 0);
-  }, [doc, meta, draftId, draftName, deriveDefaultName]);
+    triggerDownload(blob, buildExportFilename("json"));
+  }, [doc, meta, draftId, draftName, deriveDefaultName, triggerDownload, buildExportFilename]);
+
+  const onExportPdf = useCallback(async () => {
+    const { exportToPdf } = await import("@/lib/export/export-pdf");
+    const blob = await exportToPdf({
+      doc,
+      meta,
+      name: draftName || deriveDefaultName(doc),
+      draftId,
+    });
+    triggerDownload(blob, buildExportFilename("pdf"));
+  }, [
+    doc,
+    meta,
+    draftId,
+    draftName,
+    deriveDefaultName,
+    triggerDownload,
+    buildExportFilename,
+  ]);
+
+  const onExportDocx = useCallback(async () => {
+    const { exportToDocx } = await import("@/lib/export/export-docx");
+    const blob = await exportToDocx({
+      doc,
+      meta,
+      name: draftName || deriveDefaultName(doc),
+      draftId,
+    });
+    triggerDownload(blob, buildExportFilename("docx"));
+  }, [
+    doc,
+    meta,
+    draftId,
+    draftName,
+    deriveDefaultName,
+    triggerDownload,
+    buildExportFilename,
+  ]);
 
   const onNewDraft = useCallback(() => {
     if (!confirm("Start a new 8D? Unsaved changes will be lost.")) return;
@@ -387,6 +444,8 @@ export function ReportWorkspace({
           currentDraftName={displayedDraftName}
           onSaveCurrent={onSaveCurrent}
           onExportCurrent={onExportCurrent}
+          onExportPdf={onExportPdf}
+          onExportDocx={onExportDocx}
           onNewDraft={onNewDraft}
           onLoadDraft={onLoadDraft}
           savingState={savingState}

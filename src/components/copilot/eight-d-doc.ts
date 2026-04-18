@@ -133,7 +133,10 @@ export type PreventiveItem = {
 
 export type FailureImage = {
   name: string;
+  /** data: URL — used when the engineer uploaded a file from disk. */
   dataUrl?: string;
+  /** Public URL (served from /public) — used when picked from the library. */
+  url?: string;
   size?: number;
 };
 
@@ -404,6 +407,21 @@ export const SECTION_HINT: Record<SectionKey, string> = {
   D6: "What has actually been implemented and how effective it is.",
   D7: "Updates to SOPs / FMEA / control plan to prevent recurrence.",
   D8: "Team appreciation and sign-off.",
+};
+
+/** Full explanations shown as a tooltip when the engineer hovers the info
+ * icon. Kept to a few concise sentences — meant to unblock a new user,
+ * not teach them 8D theory. */
+export const SECTION_INFO: Record<SectionKey, string> = {
+  D0: "Header & statement. Identify the complaint: dates, article / drawing index, and contact on both sides. These anchor the whole report and must match the complaint email.",
+  D1: "Team. A 'champion' sponsors the 8D (often the quality manager). A 'coordinator' runs it day to day. Team members contribute expertise from production, engineering, supplier side, etc.",
+  D2: "Problem description. Facts only — what failed, where, when, how often, with pictures if available. Keep it short; analysis belongs in D4.",
+  D3: "Immediate containment. Actions you take TODAY to stop the defect reaching more customers: production stop, sorting, derogation. Fill in the quantities of suspect parts at each location.",
+  D4: "Root cause analysis. Two separate 5-why chains: why the failure OCCURRED, and why it was NOT DETECTED. Tag each chain with its 6M category (Man / Machine / Material / Method / Environment / Measurement).",
+  D5: "Planned corrective actions. What you will do to remove each root cause. One row per cause; include responsible owner and planned due date.",
+  D6: "Implemented corrective actions. Evidence the planned actions actually ran, with effectiveness % measured post-implementation.",
+  D7: "Preventive actions. Update SOPs, SPC, control plan, FMEA and preventive maintenance so the same failure mode can't return. Flag if other parts/processes are affected.",
+  D8: "Closure. Recognize the team's work and sign off. Once signed, nothing in this draft should change.",
 };
 
 /* Which field paths belong to which section — used to compute

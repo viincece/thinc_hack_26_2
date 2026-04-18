@@ -26,6 +26,29 @@ declare global {
   var __kg_client: KgClient | undefined;
   // eslint-disable-next-line no-var
   var __kg_rej: boolean | undefined;
+  // eslint-disable-next-line no-var
+  var __kg_mod: KuzuMod | undefined;
+  // eslint-disable-next-line no-var
+  var __kg_listeners_bumped: boolean | undefined;
+}
+
+/**
+ * Markers in error strings that mean "the DB is toast, rebuild it".
+ * Next.js dev HMR reloads kuzu-wasm workers which leaks listeners and pins
+ * buffer-pool pages. When any of these phrases appear we tear the Database
+ * down, rebuild the schema, replay the JSONL log, and retry the query once.
+ */
+const FATAL_KUZU_MARKERS = [
+  "Buffer manager exception",
+  "dispatcher is not defined",
+  "Worker terminated",
+  "Cannot read properties of null",
+  "Kuzu connection not ready",
+];
+
+function isFatalKuzuError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return FATAL_KUZU_MARKERS.some((m) => msg.includes(m));
 }
 
 export class KgClient {
@@ -43,10 +66,8 @@ export class KgClient {
   }
 
   private async _init() {
-    // kuzu-wasm occasionally emits spurious `unhandledRejection:
-    // "dispatcher is not defined"` from its async toString(). They are
-    // cosmetic (queries still succeed) but flood the Next dev overlay and
-    // hang our headless-browser screenshots. Swallow them.
+    // Silence the harmless kuzu-wasm `unhandledRejection: dispatcher is not
+    // defined` spam that floods the Next dev overlay.
     if (typeof process !== "undefined" && process.on && !global.__kg_rej) {
       process.on("unhandledRejection", (reason) => {
         const msg = reason instanceof Error ? reason.message : String(reason);
@@ -54,14 +75,36 @@ export class KgClient {
       });
       global.__kg_rej = true;
     }
+
+    // Raise the EventEmitter listener cap on the process / workers.
+    // tiny-worker (a kuzu-wasm dep) attaches one listener per message; under
+    // HMR these accumulate and trigger MaxListenersExceededWarning at 11.
+    if (
+      typeof process !== "undefined" &&
+      typeof (process as unknown as { setMaxListeners?: (n: number) => void })
+        .setMaxListeners === "function" &&
+      !global.__kg_listeners_bumped
+    ) {
+      (
+        process as unknown as { setMaxListeners: (n: number) => void }
+      ).setMaxListeners(100);
+      try {
+        const { EventEmitter } = await import("node:events");
+        EventEmitter.defaultMaxListeners = 100;
+      } catch {
+        /* ignore */
+      }
+      global.__kg_listeners_bumped = true;
+    }
+
     const mod = await loadKuzu();
     await mod.init();
     this._mod = mod;
     // Database(path, bufferPoolSize, maxNumThreads, enableCompression,
     //          readOnly, autoCheckpoint, checkpointThreshold)
-    // Default buffer pool is tiny (~8 MB) which HMR quickly exhausts.
-    // 256 MB is plenty for a hackathon knowledge graph.
-    this._db = new mod.Database(":memory:", 256 * 1024 * 1024);
+    // Default buffer pool is tiny (~8 MB) — way too small under HMR churn.
+    // 512 MB gives plenty of headroom + the self-healing fallback below.
+    this._db = new mod.Database(":memory:", 512 * 1024 * 1024);
     this._conn = new mod.Connection(this._db);
     await this._createSchema();
 
@@ -80,6 +123,35 @@ export class KgClient {
         }
       }
     }
+  }
+
+  /**
+   * Tear down the current Database + Connection and rebuild from scratch.
+   * Replays the JSONL log so we come back fully populated. Called when we
+   * detect a fatal kuzu-wasm error (OOM buffer, dispatcher race, etc.).
+   */
+  private async _heal(): Promise<void> {
+    console.warn("[kg] self-healing: rebuilding in-memory Kuzu database");
+    // Best-effort close, ignore failures.
+    try {
+      if (this._conn && typeof this._conn.close === "function") {
+        await this._conn.close();
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (this._db && typeof this._db.close === "function") {
+        await this._db.close();
+      }
+    } catch {
+      /* ignore */
+    }
+    this._conn = null;
+    this._db = null;
+    this._embeddings = new Map();
+    this._initPromise = null;
+    await this.init();
   }
 
   private async _createSchema() {
@@ -145,7 +217,17 @@ export class KgClient {
     params?: Record<string, unknown>,
   ): Promise<Record<string, unknown>[]> {
     await this.init();
-    return this._runAfterInit(cypher, params);
+    try {
+      return await this._runAfterInit(cypher, params);
+    } catch (e) {
+      if (isFatalKuzuError(e)) {
+        await this._heal();
+        // One retry after heal. If it still fails we surface the error so
+        // the caller can show a friendly message.
+        return this._runAfterInit(cypher, params);
+      }
+      throw e;
+    }
   }
 
   private async _runAfterInit(
@@ -352,11 +434,17 @@ export class KgClient {
 }
 
 async function loadKuzu(): Promise<KuzuMod> {
-  // `kuzu-wasm/nodejs` is CJS — require it through createRequire so we can
-  // stay on ESM for the rest of the app.
+  // Cache the kuzu-wasm module on globalThis so HMR reloads don't re-import
+  // it — each fresh import spawns a new tiny-worker and pins more memory in
+  // the shared WASM heap. Returning the cached module keeps us to one worker
+  // per Node process, which is the actual fix for the MaxListeners /
+  // Buffer-exhausted cascade under dev.
+  if (global.__kg_mod) return global.__kg_mod;
   const { createRequire } = await import("node:module");
   const req = createRequire(import.meta.url);
-  return req("kuzu-wasm/nodejs");
+  const mod = req("kuzu-wasm/nodejs");
+  global.__kg_mod = mod;
+  return mod;
 }
 
 export function kg(): KgClient {

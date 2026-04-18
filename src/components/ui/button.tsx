@@ -3,19 +3,33 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Button variants follow DESIGN.md:
+ * - default  → dark near-black CTA (#1e1f23), amber-on-hover via opacity shift
+ * - outline  → parchment card with sage border, orange hover text
+ * - ghost    → invisible until hover, then orange flash
+ * - subtle   → light sage surface, orange hover
+ * - feature  → warm-tan surface with gold border — reserved for premium CTAs
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
+  cn(
+    "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium",
+    "transition-colors focus-visible:outline-none focus-visible:ring-2",
+    "focus-visible:ring-[color:var(--color-focus-blue)]/60 focus-visible:ring-offset-1",
+    "focus-visible:ring-offset-parchment",
+    "disabled:pointer-events-none disabled:opacity-50",
+  ),
   {
     variants: {
       variant: {
-        default:
-          "bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200",
+        default: "btn-cta-dark hover:shadow-sm",
         outline:
-          "border border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900",
-        ghost:
-          "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+          "border border-sage-border bg-parchment text-olive-ink hover-orange hover:bg-hover-bg",
+        ghost: "bg-transparent text-olive-ink hover-orange hover:bg-hover-bg",
         subtle:
-          "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-50",
+          "bg-light-sage text-olive-ink hover-orange hover:bg-hover-bg border border-transparent",
+        feature:
+          "bg-warm-tan text-deep-olive ring-1 ring-inset ring-[color:var(--color-gold-border)] hover-orange",
       },
       size: {
         default: "h-9 px-4",

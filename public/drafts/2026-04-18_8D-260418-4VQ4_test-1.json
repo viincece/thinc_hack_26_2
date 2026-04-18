@@ -3,20 +3,51 @@
   "name": "Test_1",
   "date": "2026-04-18",
   "doc": {
-    "complaintDate": "2026-04-18",
+    "complaintDate": "2026-03-31",
     "reportDate": "2026-04-18",
-    "customer": {},
-    "supplier": {},
+    "customer": {
+      "articleNr": "ART-00001",
+      "articleName": "Motor Controller MC-200"
+    },
+    "supplier": {
+      "articleNr": "PM-00006",
+      "articleName": "Mikrocontroller STM32F4"
+    },
     "champion": {},
     "coordinator": {},
-    "team": [],
-    "problem": "",
-    "failureImages": [],
+    "team": [
+      {
+        "name": "user_017",
+        "department": "Montage Linie 1 (SEC-00007)",
+        "contact": ""
+      },
+      {
+        "name": "unassigned",
+        "department": "Incoming QA",
+        "contact": ""
+      },
+      {
+        "name": "unassigned",
+        "department": "SMT/Reflow Process Engineering",
+        "contact": ""
+      },
+      {
+        "name": "unassigned",
+        "department": "Supplier Quality (ElektroParts GmbH liaison)",
+        "contact": ""
+      }
+    ],
+    "problem": "Cold solder joint (SOLDER_COLD, severity: high) detected on product PRD-00099 (Motor Controller MC-200, ART-00001, order PO-00012) at visual inspection on 2026-03-31. Reported part: Mikrocontroller STM32F4 (PM-00006) at BOM position U1, from batch SB-00006 (ElektroParts GmbH, received 2025-10-15). Occurrence section: Montage Linie 1 (SEC-00007). Defect cost: €240.31. Rework performed by user_017 (firmware reflash, 54 min, €60.85). Note: this defect is distinct from the earlier SB-00007/PM-00008 cluster at C12 (weeks 5-6/2026) — it targets a different component (U1 microcontroller vs C12 capacitor) and occurred later (end of March). The notes field mentions 'Incorrect color box used for this model' which appears unrelated to the solder defect and may indicate a concurrent packaging issue.",
+    "failureImages": [
+      {
+        "name": "defect_01_cold_solder.jpg"
+      }
+    ],
     "suspect": {
       "inProduction": {
-        "qty": "",
+        "qty": 22,
         "conducted": false,
-        "reference": ""
+        "reference": "22 high/critical SOLDER_COLD defects on ART-00001 total. Check all in-process units containing PM-00006 from batch SB-00006."
       },
       "inWarehouse": {
         "qty": "",
@@ -35,88 +66,159 @@
       }
     },
     "immediate": {
-      "production_stop": {},
+      "production_stop": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-01",
+        "description": "Hold all ART-00001 production on PO-00012 at Montage Linie 1 until PM-00006 batch SB-00006 solderability is verified. Resume only after root cause confirmation.",
+        "effectiveness": 0
+      },
       "customer_informed": {},
-      "internal_info": {},
-      "sample_request": {},
-      "warehouse_sort": {},
-      "derogation": {},
-      "sub_supplier_claim": {},
-      "additional_controls": {},
-      "other": {}
+      "internal_info": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-01",
+        "description": "Notify Montage Linie 1 team lead and QA of SOLDER_COLD on PM-00006 (U1 position). Alert is distinct from the earlier PM-00008/C12 cluster — different component/batch.",
+        "effectiveness": 0
+      },
+      "sample_request": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-07",
+        "description": "Request 5 sample PM-00006 units from batch SB-00006 for incoming inspection re-test (lead coplanarity, solderability wetting balance test).",
+        "effectiveness": 0
+      },
+      "warehouse_sort": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-03",
+        "description": "Sort all finished ART-00001 units in warehouse that contain PM-00006 from batch SB-00006. Perform visual inspection of U1 solder joints. Quarantine any suspect units.",
+        "effectiveness": 0
+      },
+      "derogation": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "No derogation recommended — severity is high and solder joint reliability is safety-relevant for motor controller.",
+        "effectiveness": 0
+      },
+      "sub_supplier_claim": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-07",
+        "description": "Open supplier claim with ElektroParts GmbH (SUP-01) for batch SB-00006 of PM-00006. Request solderability test certificates and batch traceability data.",
+        "effectiveness": 0
+      },
+      "additional_controls": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-03",
+        "description": "Add 100% visual inspection of U1 solder joints at Montage Linie 1 output until root cause is confirmed. Use 10x magnification.",
+        "effectiveness": 0
+      },
+      "other": {
+        "enabled": true,
+        "responsible": "unassigned",
+        "dueDate": "2026-04-03",
+        "description": "Investigate the concurrent packaging issue noted in DEF-00077 ('Incorrect color box used for this model. Swap at packing.') — may indicate process discipline issues on PO-00012.",
+        "effectiveness": 5
+      }
     },
     "firstOkPo": "",
     "firstOkDate": "",
     "occurrence": {
-      "categories": [],
-      "potentialCause": "",
+      "categories": [
+        "Material",
+        "Method"
+      ],
+      "potentialCause": "Cold solder joint on Mikrocontroller STM32F4 (PM-00006) at position U1. Potential root causes: (1) Material — elevated ESR or poor lead coplanarity on batch SB-00006 from ElektroParts GmbH, similar to the known SB-00007 issue on PM-00008; (2) Method — solder paste deposition or reflow profile at Montage Linie 1 (SEC-00007) inadequate for fine-pitch QFP package of STM32F4.",
       "whys": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Why cold solder on U1? — Insufficient wetting of solder to microcontroller leads.",
+        "Why insufficient wetting? — Possible contamination of component leads or incorrect reflow thermal profile for the QFP package.",
+        "Why contamination or incorrect profile? — Incoming batch SB-00006 lead finish not verified; reflow profile may not have been re-validated after the SB-00007 corrective actions.",
+        "Why not verified? — No incoming inspection for lead coplanarity/solderability on IC components (PM-00006); only passive components checked.",
+        "Why no IC incoming inspection? — Current incoming QA scope does not cover fine-pitch IC solderability — gap in control plan."
       ],
       "rootCauses": [
         {
-          "text": ""
+          "text": "Supplier batch SB-00006 (ElektroParts GmbH) — possible lead finish or coplanarity issue on PM-00006 microcontroller, analogous to SB-00007 capacitor issue.",
+          "participation": 60
         },
         {
-          "text": ""
+          "text": "Reflow profile at Montage Linie 1 (SEC-00007) may not be optimised for fine-pitch QFP package of STM32F4, especially if profile was tuned for passive components.",
+          "participation": 40
         }
       ]
     },
     "detection": {
-      "categories": [],
-      "potentialCause": "",
+      "categories": [
+        "Method",
+        "Measurement"
+      ],
+      "potentialCause": "Defect was caught at visual inspection (Pruefung Linie 2, SEC-00005) but not at point of origin (Montage Linie 1, SEC-00007). No in-line AOI (Automated Optical Inspection) at the SMT/reflow stage to catch cold joints before assembly continues.",
       "whys": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Why not detected at origin? — Montage Linie 1 has no AOI station after reflow.",
+        "Why no AOI? — Current line layout relies on end-of-line visual inspection as the primary solder-quality gate.",
+        "Why rely on visual only? — AOI investment not yet approved for Linie 1; historical defect rate was below threshold until recent batch issues.",
+        "Why was the threshold not re-evaluated? — SB-00007 cluster triggered corrective actions for PM-00008 at C12 but detection capability was not extended to other SMT positions.",
+        "Why not extended? — Scope of the SB-00007 CAPA was limited to the specific part/position; systemic detection gap not addressed."
       ],
       "rootCauses": [
         {
-          "text": ""
+          "text": "No in-line AOI at Montage Linie 1 (SEC-00007) after reflow — cold joints on any component pass undetected until end-of-line.",
+          "participation": 70
         },
         {
-          "text": ""
+          "text": "SB-00007 corrective actions did not broaden detection scope to cover all SMT positions, leaving U1 (PM-00006) unchecked.",
+          "participation": 30
         }
       ]
     },
     "plannedOccurrence": [
       {
-        "rootCauseNo": "1"
+        "rootCauseNo": 1,
+        "description": "Perform solderability wetting balance test on retained samples from batch SB-00006 (PM-00006). Compare results against IPC J-STD-002 acceptance criteria. If fail, quarantine remaining batch stock and switch to alternate batch.",
+        "responsible": "unassigned",
+        "date": "2026-04-14"
       },
       {
-        "rootCauseNo": "2"
+        "rootCauseNo": 1,
+        "description": "Request ElektroParts GmbH (SUP-01) provide batch-level solderability and lead coplanarity certificates for SB-00006. If certificates not available or out-of-spec, escalate to supplier CAPA.",
+        "responsible": "unassigned",
+        "date": "2026-04-14"
       },
       {
-        "rootCauseNo": "3"
+        "rootCauseNo": 2,
+        "description": "Run reflow profile validation at Montage Linie 1 (SEC-00007) specifically measuring peak temperature and time-above-liquidus at the U1 (QFP-64) position. Adjust profile if outside IPC-7530 recommendations for this package.",
+        "responsible": "unassigned",
+        "date": "2026-04-14"
       }
     ],
     "plannedDetection": [
       {
-        "rootCauseNo": "1"
+        "rootCauseNo": 1,
+        "description": "Add incoming inspection check for IC component lead coplanarity and solderability on all fine-pitch parts (PM-00006, PM-00007) — currently only passive components are checked.",
+        "responsible": "unassigned",
+        "date": "2026-04-21"
       },
       {
-        "rootCauseNo": "2"
-      },
-      {
-        "rootCauseNo": "3"
+        "rootCauseNo": 2,
+        "description": "Evaluate inline AOI installation at Montage Linie 1 post-reflow station. AOI would catch cold joints on all positions (U1, C12, etc.) before further assembly. Prepare business case with defect cost data (~€240/defect + rework).",
+        "responsible": "unassigned",
+        "date": "2026-05-15"
       }
     ],
-    "riskOfNewFailure": "",
+    "riskOfNewFailure": "yes",
     "implementedOccurrence": [
       {
-        "rootCauseNo": "1"
+        "rootCauseNo": 1,
+        "description": "Rework performed on PRD-00099 by user_017 (RW-00067): firmware reflash to v2.1 with checksum verification. 54 minutes, €60.85. Note: rework action text describes firmware reflash which may not directly address the cold solder root cause — verify that solder rework was also performed.",
+        "date": "2026-04-01",
+        "effectiveness": 0,
+        "note": "Effectiveness not yet verified. Confirm solder joint was also reworked (not just firmware)."
       },
       {
-        "rootCauseNo": "2"
-      },
-      {
-        "rootCauseNo": "3"
+        "rootCauseNo": ""
       }
     ],
     "implementedDetection": [
@@ -128,21 +230,276 @@
       },
       {
         "rootCauseNo": "3"
+      },
+      {
+        "rootCauseNo": ""
       }
     ],
     "preventive": {
-      "work_instruction": {},
-      "spc": {},
-      "control_plan": {},
-      "fmea": {},
-      "preventive_maintenance": {},
-      "other": {}
+      "work_instruction": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-04-21",
+        "endDate": ""
+      },
+      "spc": {
+        "applicable": "no",
+        "responsible": "",
+        "dueDate": "",
+        "endDate": ""
+      },
+      "control_plan": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-04-21",
+        "endDate": ""
+      },
+      "fmea": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-01",
+        "endDate": ""
+      },
+      "preventive_maintenance": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-04-14",
+        "endDate": ""
+      },
+      "other": {
+        "applicable": "yes",
+        "responsible": "unassigned",
+        "dueDate": "2026-05-01",
+        "endDate": ""
+      }
     },
-    "transferredToSimilar": "",
-    "otherPartsAffected": "",
-    "otherPartsWhich": "",
-    "appreciation": ""
+    "transferredToSimilar": "yes",
+    "otherPartsAffected": "yes",
+    "otherPartsWhich": "PM-00006 (Mikrocontroller STM32F4) from batch SB-00006 is installed at BOM position U1 across articles: ART-00001 (Motor Controller MC-200), ART-00002 (Sensor Unit SU-100), ART-00004 (Controller Board CB-150), ART-00005 (Gateway Module GM-400). All units containing PM-00006 from SB-00006 should be checked.",
+    "appreciation": "This 8D addresses a high-severity cold solder joint (SOLDER_COLD) on the Mikrocontroller STM32F4 (PM-00006) at BOM position U1 in product PRD-00099 (Motor Controller MC-200). The defect is distinct from the earlier SB-00007/PM-00008 cluster at C12 and points to a broader supplier quality and detection gap for fine-pitch IC components at Montage Linie 1. Two root cause hypotheses have been proposed: (1) supplier batch SB-00006 lead finish/coplanarity issue (60% participation), (2) reflow profile not optimized for QFP package (40%). Key corrective actions: batch verification, reflow profile validation, incoming IC solderability testing, and AOI evaluation. Lessons learned should be transferred to ART-00002, ART-00004, and ART-00005 which use the same microcontroller. Report closure pending verification of corrective action effectiveness."
   },
-  "meta": {},
-  "savedAt": "2026-04-18T18:24:39.248Z"
+  "meta": {
+    "complaintDate": {
+      "status": "filled",
+      "source": "DEF-00077"
+    },
+    "reportDate": {
+      "status": "needs_input",
+      "note": "Enter today's date when opening the 8D report."
+    },
+    "customer.articleNr": {
+      "status": "filled",
+      "source": "DEF-00077, ART-00001"
+    },
+    "customer.articleName": {
+      "status": "filled",
+      "source": "ART-00001"
+    },
+    "customer.complaintNo": {
+      "status": "needs_input",
+      "note": "Enter the external customer complaint number if this was raised by a customer. If internal-only, use internal NCR number."
+    },
+    "customer.drawingIndex": {
+      "status": "needs_input",
+      "note": "Provide the current drawing revision index for ART-00001."
+    },
+    "customer.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter the customer contact person who raised or will receive this 8D."
+    },
+    "customer.email": {
+      "status": "needs_input",
+      "note": "Provide customer contact email."
+    },
+    "customer.phone": {
+      "status": "needs_input",
+      "note": "Provide customer contact phone number."
+    },
+    "supplier.articleNr": {
+      "status": "filled",
+      "source": "DEF-00077"
+    },
+    "supplier.articleName": {
+      "status": "filled",
+      "source": "PM-00006"
+    },
+    "supplier.complaintNo": {
+      "status": "needs_input",
+      "note": "Assign a supplier complaint number if escalating to ElektroParts GmbH (SUP-01)."
+    },
+    "supplier.drawingIndex": {
+      "status": "needs_input",
+      "note": "Provide the drawing/datasheet revision for PM-00006 Mikrocontroller STM32F4."
+    },
+    "supplier.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter the quality contact at ElektroParts GmbH (supplier SUP-01, batch SB-00006)."
+    },
+    "supplier.email": {
+      "status": "needs_input",
+      "note": "Provide ElektroParts GmbH quality contact email."
+    },
+    "supplier.phone": {
+      "status": "needs_input",
+      "note": "Provide ElektroParts GmbH quality contact phone."
+    },
+    "problem": {
+      "status": "filled",
+      "source": "DEF-00077, PRD-00099, RW-00067, SB-00006, PM-00006, ART-00001, OBS-S1-02"
+    },
+    "failureImages": {
+      "status": "filled",
+      "source": "DEF-00077"
+    },
+    "occurrence": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006, OBS-S1-01, OBS-S1-02, SEC-00007"
+    },
+    "detection": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007, SEC-00005, OBS-S1-02"
+    },
+    "suspect.inProduction": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006"
+    },
+    "suspect.inWarehouse": {
+      "status": "needs_input",
+      "note": "Check warehouse for finished ART-00001 units built with PM-00006 from batch SB-00006. Query logistics for stock count."
+    },
+    "suspect.inTransit": {
+      "status": "needs_input",
+      "note": "Check with logistics for any ART-00001 units in transit containing parts from batch SB-00006."
+    },
+    "suspect.atCustomer": {
+      "status": "needs_input",
+      "note": "Check shipped ART-00001 units with PM-00006 from SB-00006. Cross-reference with customer delivery records."
+    },
+    "immediate.production_stop": {
+      "status": "suggested",
+      "source": "DEF-00077, PO-00012, SB-00006"
+    },
+    "immediate.customer_informed": {
+      "status": "needs_input",
+      "note": "Determine if any units from PO-00012 with this defect pattern have been shipped. If yes, inform the customer and initiate field containment."
+    },
+    "immediate.internal_info": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007"
+    },
+    "immediate.sample_request": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006, OBS-S1-01"
+    },
+    "immediate.warehouse_sort": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006"
+    },
+    "immediate.derogation": {
+      "status": "suggested",
+      "source": "DEF-00077"
+    },
+    "immediate.sub_supplier_claim": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006, SUP-01"
+    },
+    "immediate.additional_controls": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007"
+    },
+    "immediate.other": {
+      "status": "filled",
+      "source": "engineer edit"
+    },
+    "plannedOccurrence": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006, SEC-00007, OBS-S1-01"
+    },
+    "plannedDetection": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007, OBS-S1-02"
+    },
+    "implementedOccurrence": {
+      "status": "filled",
+      "source": "engineer edit"
+    },
+    "implementedDetection": {
+      "status": "filled",
+      "source": "engineer edit"
+    },
+    "firstOkPo": {
+      "status": "needs_input",
+      "note": "Enter the first production order confirmed OK after corrective actions are implemented."
+    },
+    "firstOkDate": {
+      "status": "needs_input",
+      "note": "Enter the date of the first OK production run after corrective actions."
+    },
+    "riskOfNewFailure": {
+      "status": "filled",
+      "source": "engineer edit"
+    },
+    "preventive.work_instruction": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007",
+      "note": "Update work instruction for Montage Linie 1 to include post-reflow visual check of fine-pitch IC solder joints (U1, U2) as mandatory hold point."
+    },
+    "preventive.spc": {
+      "status": "suggested",
+      "source": "DEF-00077",
+      "note": "SPC not directly applicable — cold solder is an attribute defect (pass/fail), not a variable measurement. Consider p-chart if AOI is installed."
+    },
+    "preventive.control_plan": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007, OBS-S1-01",
+      "note": "Update control plan for ART-00001 to add incoming solderability check for fine-pitch ICs and post-reflow inspection at SEC-00007."
+    },
+    "preventive.fmea": {
+      "status": "suggested",
+      "source": "DEF-00077, ART-00001, OBS-BOM-ART-00001",
+      "note": "Update process FMEA for ART-00001 reflow step — add failure mode 'cold solder on fine-pitch IC (U1)' with current occurrence/detection ratings and planned controls."
+    },
+    "preventive.preventive_maintenance": {
+      "status": "suggested",
+      "source": "DEF-00077, SEC-00007",
+      "note": "Schedule reflow oven profile verification as part of preventive maintenance at Montage Linie 1 (quarterly or after batch change for fine-pitch components)."
+    },
+    "preventive.other": {
+      "status": "suggested",
+      "source": "DEF-00077, SB-00006, SB-00007, OBS-S1-01",
+      "note": "Implement supplier qualification review for ElektroParts GmbH (SUP-01) covering both PM-00008 (SB-00007 issue) and PM-00006 (SB-00006 issue). Consider second-source qualification."
+    },
+    "transferredToSimilar": {
+      "status": "suggested",
+      "source": "PM-00006, ART-00002, ART-00004, ART-00005",
+      "note": "PM-00006 (Mikrocontroller STM32F4) is used at U1 position in ART-00002 (Sensor Unit SU-100), ART-00004 (Controller Board CB-150), and ART-00005 (Gateway Module GM-400). Lessons learned should be transferred."
+    },
+    "otherPartsAffected": {
+      "status": "suggested",
+      "source": "PM-00006, SB-00006",
+      "note": "All products using PM-00006 from batch SB-00006 may be affected."
+    },
+    "otherPartsWhich": {
+      "status": "filled",
+      "source": "PM-00006, SB-00006, ART-00001, ART-00002, ART-00004, ART-00005"
+    },
+    "champion": {
+      "status": "needs_input",
+      "note": "Assign the 8D champion (typically quality manager or plant manager). Needs name, department, and contact info."
+    },
+    "coordinator": {
+      "status": "needs_input",
+      "note": "Assign the 8D coordinator (typically the quality engineer leading this investigation). Needs name, department, and contact info."
+    },
+    "team": {
+      "status": "suggested",
+      "source": "RW-00067, SEC-00007, SB-00006",
+      "note": "user_017 performed the rework and should be on the team. Add representatives from incoming QA, reflow process engineering, and supplier quality. Fill in actual names and contacts."
+    },
+    "appreciation": {
+      "status": "suggested",
+      "source": "DEF-00077, RW-00067, SB-00006, OBS-S1-01, OBS-S1-02, ART-00001"
+    }
+  },
+  "savedAt": "2026-04-18T18:59:33.928Z"
 }

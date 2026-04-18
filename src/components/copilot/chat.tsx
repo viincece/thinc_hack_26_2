@@ -35,7 +35,7 @@ export function Chat({
     <div className="flex h-full flex-col">
       <div className="border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
         <div className="text-xs uppercase tracking-wide text-zinc-500">
-          Co-pilot
+          S³ · SixSigmaSense
         </div>
         <div className="text-sm font-medium">
           Claude, grounded in your Manex API

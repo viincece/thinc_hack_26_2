@@ -94,11 +94,18 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-          <p className="text-sm text-zinc-500">
-            Quality signals across the shop floor, sourced live from the Manex API.
+      <div className="flex items-start justify-between gap-6">
+        <div className="max-w-2xl">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-sage-cream px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-olive ring-1 ring-inset ring-sage-border">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600" />
+            Live shopfloor feed
+          </div>
+          <h1 className="text-3xl font-extrabold leading-[1.15] tracking-tight text-deep-olive">
+            Quality signals across the shop floor.
+          </h1>
+          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted-olive">
+            Pulled live from the Manex API — defects, claims, and initiatives,
+            so you can spot the pattern before you close the ticket.
           </p>
         </div>
         <div className="flex gap-2">
@@ -114,12 +121,12 @@ export default async function Home() {
       </div>
 
       {!apiOk ? (
-        <Card className="border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
+        <Card className="border-[color:var(--color-gold-border)]/50 bg-[color:var(--color-warm-tan)]/40">
           <CardHeader>
-            <CardTitle className="text-amber-900 dark:text-amber-200">
+            <CardTitle className="text-deep-olive">
               Can&apos;t reach the Manex API
             </CardTitle>
-            <CardDescription className="text-amber-800 dark:text-amber-200/80">
+            <CardDescription className="text-muted-olive">
               Check <code>MANEX_API_URL</code> and <code>MANEX_API_KEY</code> in{" "}
               <code>.env.local</code>, then restart <code>next dev</code>.
             </CardDescription>
@@ -232,18 +239,20 @@ function StatCard({
   hint?: string;
 }) {
   return (
-    <Card>
+    <Card className="transition-colors hover:border-light-border">
       <CardContent className="flex items-center justify-between pt-5">
         <div>
-          <div className="text-xs uppercase tracking-wide text-zinc-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-olive">
             {label}
           </div>
-          <div className="mt-1 text-2xl font-semibold">{value}</div>
+          <div className="mt-1 font-sans text-3xl font-extrabold leading-none text-deep-olive">
+            {value}
+          </div>
           {hint ? (
-            <div className="mt-0.5 text-xs text-zinc-500">{hint}</div>
+            <div className="mt-1.5 text-xs text-muted-olive">{hint}</div>
           ) : null}
         </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sage-cream text-olive-ink ring-1 ring-inset ring-sage-border">
           {icon}
         </div>
       </CardContent>

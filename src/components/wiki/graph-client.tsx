@@ -29,6 +29,36 @@ type GraphEdge = { from: string; to: string; rel: string };
 const NODE_W = 220;
 const NODE_H = 58;
 
+/**
+ * Solid-colour palette used by the MiniMap so every kind has a distinct,
+ * high-contrast dot against the parchment background. Matches the icon
+ * palette from kindMeta but biased a shade darker for readability at
+ * minimap scale.
+ */
+const KIND_DOT_COLOR: Record<string, string> = {
+  Factory: "#57534e",
+  Line: "#0369a1",
+  Section: "#0d9488",
+  Article: "#4f46e5",
+  Supplier: "#7c3aed",
+  Batch: "#d97706",
+  Part: "#0284c7",
+  BomPosition: "#0891b2",
+  DefectCode: "#be123c",
+  TestCode: "#65a30d",
+  Operator: "#db2777",
+  Order: "#64748b",
+  Product: "#52525b",
+  Concept: "#b45309",
+  Observation: "#64748b",
+  Report: "#047857",
+  Source: "#525252",
+};
+
+function dotColor(kind?: string) {
+  return KIND_DOT_COLOR[kind ?? ""] ?? "#9ca3af";
+}
+
 /** Top-level node kinds (React Flow layer filter). */
 const KINDS = [
   "Entity",
@@ -302,6 +332,12 @@ export function GraphClient({
         id: n.id,
         type: "kg",
         position: p,
+        // Advertise the node dimensions to React Flow so the MiniMap has
+        // rectangles to draw. The main canvas still measures the actual DOM
+        // size via ResizeObserver, so this doesn't interfere with edge
+        // routing.
+        width: NODE_W,
+        height: NODE_H,
         data: {
           label: n.label,
           kind: n.kind,
@@ -448,8 +484,33 @@ export function GraphClient({
         }}
         proOptions={{ hideAttribution: true }}
       >
-        <Background gap={20} size={1} color="#e4e4e7" />
-        <MiniMap pannable zoomable nodeStrokeWidth={2} />
+        <Background gap={20} size={1} color="#d7d8d0" />
+        <MiniMap
+          pannable
+          zoomable
+          position="bottom-right"
+          nodeStrokeWidth={1}
+          nodeStrokeColor="#ffffff"
+          nodeBorderRadius={3}
+          maskColor="rgba(35, 37, 29, 0.09)"
+          maskStrokeColor="#4d4f46"
+          maskStrokeWidth={1.2}
+          nodeColor={(n) => {
+            const d = n.data as
+              | { kind?: string; subkind?: string }
+              | undefined;
+            return dotColor(d?.subkind || d?.kind);
+          }}
+          style={{
+            width: 230,
+            height: 170,
+            margin: 12,
+            backgroundColor: "#fdfdf8",
+            border: "1px solid #bfc1b7",
+            borderRadius: 6,
+            boxShadow: "0 10px 24px -14px rgba(35, 37, 29, 0.35)",
+          }}
+        />
         <Controls showInteractive={false} />
       </ReactFlow>
     </div>

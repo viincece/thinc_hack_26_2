@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileDown,
   FilePlus,
   FileText,
   Folder,
@@ -34,6 +35,8 @@ export function ReportSidepanel({
   currentDraftName,
   onSaveCurrent,
   onExportCurrent,
+  onExportPdf,
+  onExportDocx,
   onNewDraft,
   onLoadDraft,
   savingState,
@@ -45,6 +48,8 @@ export function ReportSidepanel({
   currentDraftName: string;
   onSaveCurrent: (name: string) => Promise<void>;
   onExportCurrent: () => void;
+  onExportPdf: () => Promise<void>;
+  onExportDocx: () => Promise<void>;
   onNewDraft: () => void;
   onLoadDraft: (id: string) => Promise<void>;
   savingState: "idle" | "saving" | "saved" | "error";
@@ -53,6 +58,22 @@ export function ReportSidepanel({
   const [drafts, setDrafts] = useState<DraftSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [draftName, setDraftName] = useState(currentDraftName);
+  const [exportBusy, setExportBusy] = useState<null | "pdf" | "docx">(null);
+  const runExport = useCallback(
+    async (kind: "pdf" | "docx") => {
+      if (exportBusy) return;
+      setExportBusy(kind);
+      try {
+        if (kind === "pdf") await onExportPdf();
+        else await onExportDocx();
+      } catch {
+        /* errors surface via workspace */
+      } finally {
+        setExportBusy(null);
+      }
+    },
+    [exportBusy, onExportPdf, onExportDocx],
+  );
   const refreshSeq = useRef(0);
 
   useEffect(() => {
@@ -135,6 +156,34 @@ export function ReportSidepanel({
         <Button
           variant="ghost"
           size="icon"
+          onClick={() => void runExport("pdf")}
+          disabled={!!exportBusy}
+          title="Export PDF"
+          className="h-8 w-8"
+        >
+          {exportBusy === "pdf" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileDown className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => void runExport("docx")}
+          disabled={!!exportBusy}
+          title="Export DOCX"
+          className="h-8 w-8"
+        >
+          {exportBusy === "docx" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileText className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onExportCurrent}
           title="Export JSON"
           className="h-8 w-8"
@@ -208,15 +257,6 @@ export function ReportSidepanel({
           </Button>
           <Button
             size="sm"
-            variant="outline"
-            onClick={onExportCurrent}
-            className="h-7"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export
-          </Button>
-          <Button
-            size="sm"
             variant="ghost"
             onClick={onNewDraft}
             className="h-7"
@@ -225,6 +265,53 @@ export function ReportSidepanel({
             <FilePlus className="h-3.5 w-3.5" />
             New
           </Button>
+        </div>
+        <div className="mt-2">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+            Export
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!!exportBusy}
+              onClick={() => void runExport("pdf")}
+              className="h-7"
+              title="Export a clean PDF of the current draft"
+            >
+              {exportBusy === "pdf" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileDown className="h-3.5 w-3.5" />
+              )}
+              PDF
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!!exportBusy}
+              onClick={() => void runExport("docx")}
+              className="h-7"
+              title="Export a .docx of the current draft"
+            >
+              {exportBusy === "docx" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileText className="h-3.5 w-3.5" />
+              )}
+              DOCX
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onExportCurrent}
+              className="h-7"
+              title="Export the raw JSON draft"
+            >
+              <Download className="h-3.5 w-3.5" />
+              JSON
+            </Button>
+          </div>
         </div>
         {savingState === "error" ? (
           <div className="mt-2 rounded bg-red-50 px-2 py-1 text-[11px] text-red-700 dark:bg-red-950 dark:text-red-300">

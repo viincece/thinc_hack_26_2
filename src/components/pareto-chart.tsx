@@ -32,10 +32,11 @@ export function ParetoChart({ buckets }: { buckets: Bucket[] }) {
           data={data}
           margin={{ top: 8, right: 24, bottom: 8, left: 0 }}
         >
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+          <CartesianGrid stroke="#d7d8d0" strokeDasharray="3 3" />
           <XAxis
             dataKey="code"
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "#65675e" }}
+            stroke="#bfc1b7"
             angle={-25}
             textAnchor="end"
             interval={0}
@@ -43,41 +44,46 @@ export function ParetoChart({ buckets }: { buckets: Bucket[] }) {
           />
           <YAxis
             yAxisId="left"
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "#65675e" }}
+            stroke="#bfc1b7"
             label={{
               value: "Defects",
               angle: -90,
               position: "insideLeft",
-              style: { fontSize: 11, fill: "#71717a" },
+              style: { fontSize: 11, fill: "#65675e" },
             }}
           />
           <YAxis
             yAxisId="right"
             orientation="right"
             domain={[0, 100]}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "#65675e" }}
+            stroke="#bfc1b7"
             unit="%"
           />
           <Tooltip
             contentStyle={{
               fontSize: 12,
-              borderRadius: 8,
-              border: "1px solid #e4e4e7",
+              borderRadius: 4,
+              border: "1px solid #bfc1b7",
+              background: "#fdfdf8",
+              color: "#23251d",
             }}
+            cursor={{ fill: "#eeefe9" }}
           />
           <Bar
             yAxisId="left"
             dataKey="count"
-            fill="#0ea5e9"
+            fill="#4d4f46"
             radius={[4, 4, 0, 0]}
           />
           <Line
             yAxisId="right"
             type="monotone"
             dataKey="cumPct"
-            stroke="#f59e0b"
+            stroke="#F54E00"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={{ r: 3, fill: "#F54E00", stroke: "#F54E00" }}
           />
         </ComposedChart>
       </ResponsiveContainer>

@@ -3,22 +3,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium",
+  "inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-semibold tracking-tight",
   {
     variants: {
       variant: {
+        /** Dark CTA chip — solid near-black, white text */
         default:
-          "border-transparent bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900",
+          "border-transparent bg-cta-dark text-parchment",
+        /** Sage surface chip — low-emphasis labels */
         secondary:
-          "border-transparent bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50",
+          "border-transparent bg-light-sage text-deep-olive",
+        /** Outlined chip on light surfaces */
         outline:
-          "border-zinc-200 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300",
-        destructive:
-          "border-transparent bg-red-600 text-white dark:bg-red-500",
+          "border-sage-border bg-parchment text-muted-olive",
+        /** Error / critical — warm red, still warm */
+        destructive: "border-transparent bg-[#b8261f] text-white",
+        /** Warning — brand amber */
         warning:
-          "border-transparent bg-amber-500 text-white dark:bg-amber-500/90",
-        success:
-          "border-transparent bg-emerald-600 text-white dark:bg-emerald-500",
+          "border-transparent bg-[color:var(--color-brand-amber)] text-deep-olive",
+        /** Success — sage-compatible green */
+        success: "border-transparent bg-emerald-600 text-white",
+        /** Brand chip — warm tan featured */
+        brand:
+          "border border-[color:var(--color-gold-border)]/60 bg-warm-tan text-deep-olive",
       },
     },
     defaultVariants: { variant: "default" },

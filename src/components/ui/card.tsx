@@ -1,11 +1,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Card — warm parchment surface, sage-tinted border, no shadow.
+ * Per DESIGN.md the elevation system relies on border containment + surface
+ * shifts rather than drop shadows.
+ */
 function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50",
+        "rounded-md border border-sage-border bg-parchment text-olive-ink",
         className,
       )}
       {...props}
@@ -32,7 +37,7 @@ function CardTitle({
   return (
     <h3
       className={cn(
-        "text-base font-semibold leading-none tracking-tight",
+        "text-base font-bold leading-none tracking-tight text-deep-olive",
         className,
       )}
       {...props}
@@ -46,7 +51,7 @@ function CardDescription({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <p
-      className={cn("text-sm text-zinc-500 dark:text-zinc-400", className)}
+      className={cn("text-sm leading-6 text-muted-olive", className)}
       {...props}
     />
   );

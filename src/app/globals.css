@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
+/* DESIGN.md is a light-only system. Switch Tailwind's `dark:` variant from
+   the default `prefers-color-scheme` to an explicit `.dark` class gate —
+   since we never add `.dark` to the tree, every `dark:*` utility stays
+   dormant and the warm-parchment palette always wins, regardless of the
+   OS / browser dark-mode preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/*  Design system (see DESIGN.md)                                            */
+/*                                                                           */
+/*  Warm sage/olive palette, PostHog-inspired. Applied globally so every    */
+/*  page inherits the same visual language. Existing `bg-zinc-*` /            */
+/*  `text-zinc-*` classes are remapped to the olive family below so the     */
+/*  whole codebase shifts palette without touching every component.          */
+/* ──────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --color-parchment: #fdfdf8;      /* primary page background                   */
+  --color-sage-cream: #eeefe9;     /* secondary surface / inputs               */
+  --color-light-sage: #e5e7e0;     /* tertiary surface / light buttons         */
+  --color-warm-tan: #d4c9b8;       /* featured surface                         */
+  --color-hover-bg: #f4f4f4;       /* universal hover background               */
+
+  /* Ink */
+  --color-olive-ink: #4d4f46;      /* primary body text                        */
+  --color-deep-olive: #23251d;     /* headings / high-emphasis links           */
+  --color-muted-olive: #65675e;    /* secondary text                           */
+  --color-sage-placeholder: #9ea096; /* placeholder / disabled text            */
+
+  /* Borders */
+  --color-sage-border: #bfc1b7;    /* primary border                           */
+  --color-light-border: #b6b7af;   /* secondary / toolbar border               */
+
+  /* Accent */
+  --color-brand-orange: #F54E00;   /* hover flash — the signature surprise     */
+  --color-brand-amber: #F7A501;    /* warm gold hover accent                   */
+  --color-brand-tan: #d4c9b8;
+  --color-gold-border: #b17816;
+  --color-focus-blue: #3b82f6;
+
+  /* CTAs */
+  --color-cta-dark: #1e1f23;       /* dark primary button bg                   */
+  --color-dark-text: #111827;
+
+  /* Light-mode surface/ink roles used by Next.js defaults */
+  --background: var(--color-parchment);
+  --foreground: var(--color-olive-ink);
 }
 
 @theme inline {
+  /* Next.js + Tailwind look up these */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Our fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand tokens exposed as Tailwind classes:
+        bg-parchment, bg-sage-cream, bg-light-sage, bg-warm-tan
+        text-olive-ink, text-deep-olive, text-muted-olive, text-sage
+        border-sage, border-light-border
+        text-brand-orange, text-brand-amber
+        bg-cta-dark                                                        */
+  --color-parchment: var(--color-parchment);
+  --color-sage-cream: var(--color-sage-cream);
+  --color-light-sage: var(--color-light-sage);
+  --color-warm-tan: var(--color-warm-tan);
+  --color-hover-bg: var(--color-hover-bg);
+
+  --color-olive-ink: var(--color-olive-ink);
+  --color-deep-olive: var(--color-deep-olive);
+  --color-muted-olive: var(--color-muted-olive);
+  --color-sage: var(--color-sage-placeholder);
+
+  --color-sage-border: var(--color-sage-border);
+  --color-light-border: var(--color-light-border);
+
+  --color-brand-orange: var(--color-brand-orange);
+  --color-brand-amber: var(--color-brand-amber);
+  --color-brand-tan: var(--color-brand-tan);
+  --color-gold-border: var(--color-gold-border);
+
+  --color-cta-dark: var(--color-cta-dark);
+  --color-dark-text: var(--color-dark-text);
+
+  /* ─── Remap `zinc-*` so the ~220 existing usages pick up the palette ── */
+  --color-zinc-50: #fdfdf8;   /* parchment           */
+  --color-zinc-100: #eeefe9;  /* sage-cream          */
+  --color-zinc-200: #e5e7e0;  /* light-sage / border */
+  --color-zinc-300: #bfc1b7;  /* sage border         */
+  --color-zinc-400: #9ea096;  /* sage placeholder    */
+  --color-zinc-500: #65675e;  /* muted olive         */
+  --color-zinc-600: #4d4f46;  /* olive ink           */
+  --color-zinc-700: #3d3f37;  /* between ink + deep  */
+  --color-zinc-800: #23251d;  /* deep olive          */
+  --color-zinc-900: #1e1f23;  /* cta dark            */
+  --color-zinc-950: #151612;
+
+  /* Swap emerald to a sage-compatible "go" tone (still green but warmer) */
+  --color-emerald-50: #eef3ec;
+  --color-emerald-100: #dce7d8;
+  --color-emerald-200: #b7ceae;
+  --color-emerald-300: #8cb280;
+  --color-emerald-400: #6a9a59;
+  --color-emerald-500: #4f8040;
+  --color-emerald-600: #3e6833;
+  --color-emerald-700: #325428;
+  --color-emerald-800: #2a4522;
+  --color-emerald-900: #23391e;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* DESIGN.md specifies a warm-parchment palette — we deliberately don't ship
+   a dark variant. Force `color-scheme: light` so the UA doesn't invert form
+   controls or scrollbars based on OS preference. */
+html {
+  color-scheme: only light;
 }
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Bold, confident headings per the design system. Body line-heights stay
+   generous (1.55) for comfortable reading on content-heavy pages.        */
+h1,
+h2,
+h3 {
+  color: var(--color-deep-olive);
+  letter-spacing: -0.015em;
+}
+h1 {
+  font-weight: 800;
+}
+h2,
+h3 {
+  font-weight: 700;
+}
+p {
+  line-height: 1.55;
+}
+
+/* ─── Signature hover pattern ─────────────────────────────────────────── */
+/* Anchors and nav links flash PostHog Orange on hover. Buttons can opt in
+   via the `.hover-orange` utility.                                         */
+a {
+  transition: color 120ms ease;
+}
+a:hover {
+  color: var(--color-brand-orange);
+}
+
+/* Opt-in utility for buttons / chips that shouldn't globally inherit
+   orange-on-hover (e.g. dark CTAs) but want the flash behaviour.           */
+.hover-orange {
+  transition: color 120ms ease;
+}
+.hover-orange:hover {
+  color: var(--color-brand-orange) !important;
+}
+
+/* Dark CTA uses an opacity-based hover instead of colour shift. */
+.btn-cta-dark {
+  background: var(--color-cta-dark);
+  color: #ffffff;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.btn-cta-dark:hover {
+  opacity: 0.82;
+  color: var(--color-brand-amber);
+}
+.btn-cta-dark:active {
+  transform: scale(0.98);
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-sage-border) transparent;
+}
+
+/* ─── Small niceties ──────────────────────────────────────────────────── */
+::selection {
+  background: var(--color-brand-amber);
+  color: var(--color-deep-olive);
+}
+

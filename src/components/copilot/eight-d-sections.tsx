@@ -1,7 +1,9 @@
 "use client";
 
-import { Plus, Trash2, Upload, X } from "lucide-react";
+import { useState } from "react";
+import { Check, Image as ImageIcon, Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DEFECT_LIBRARY } from "./defect-library";
 import {
   Checkbox,
   FieldShell,
@@ -289,6 +291,8 @@ export function SectionD2({
   onAsk,
   disabled,
 }: CommonProps) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
+
   const onPickFile = async (files: FileList | null) => {
     if (!files) return;
     const next: FailureImage[] = [...doc.failureImages];
@@ -301,6 +305,20 @@ export function SectionD2({
       next.push({ name: f.name, size: f.size, dataUrl });
     }
     onField("failureImages", next);
+  };
+  const toggleLibraryImage = (photo: { url: string; label: string }) => {
+    const exists = doc.failureImages.some((i) => i.url === photo.url);
+    if (exists) {
+      onField(
+        "failureImages",
+        doc.failureImages.filter((i) => i.url !== photo.url),
+      );
+    } else {
+      onField("failureImages", [
+        ...doc.failureImages,
+        { name: photo.label, url: photo.url },
+      ]);
+    }
   };
   const removeImage = (idx: number) => {
     onField(
@@ -336,50 +354,117 @@ export function SectionD2({
         disabled={disabled}
       >
         <div className="space-y-2">
-          <label
-            className={`inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900 ${disabled ? "pointer-events-none opacity-50" : ""}`}
-          >
-            <Upload className="h-3.5 w-3.5" />
-            Upload image(s)
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => onPickFile(e.target.files)}
+          <div className="flex flex-wrap gap-2">
+            <label
+              className={`inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900 ${disabled ? "pointer-events-none opacity-50" : ""}`}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Upload image(s)
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => onPickFile(e.target.files)}
+                disabled={disabled}
+              />
+            </label>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLibraryOpen((p) => !p)}
               disabled={disabled}
-            />
-          </label>
+              title="Pick from the defect photo library"
+              className="h-auto py-2"
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              {libraryOpen ? "Hide library" : "Pick from library"}
+              <span className="ml-1 rounded bg-zinc-100 px-1 text-[10px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                {DEFECT_LIBRARY.length}
+              </span>
+            </Button>
+          </div>
+
+          {libraryOpen ? (
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="mb-1 text-[11px] text-zinc-500">
+                Click a photo to attach or remove.
+              </div>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                {DEFECT_LIBRARY.map((photo) => {
+                  const selected = doc.failureImages.some(
+                    (i) => i.url === photo.url,
+                  );
+                  return (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      onClick={() => toggleLibraryImage(photo)}
+                      disabled={disabled}
+                      className={`group relative overflow-hidden rounded border text-left transition-colors ${
+                        selected
+                          ? "border-emerald-400 ring-2 ring-emerald-200 dark:border-emerald-600 dark:ring-emerald-900"
+                          : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                      }`}
+                      title={photo.label}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.url}
+                        alt={photo.label}
+                        className="h-16 w-full bg-white object-cover dark:bg-zinc-950"
+                      />
+                      <div className="truncate bg-white/80 px-1 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-950/80 dark:text-zinc-300">
+                        {photo.label}
+                      </div>
+                      {selected ? (
+                        <span className="absolute right-1 top-1 rounded-full bg-emerald-600 p-0.5 text-white">
+                          <Check className="h-3 w-3" />
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {doc.failureImages.length > 0 ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {doc.failureImages.map((img, i) => (
-                <div
-                  key={i}
-                  className="relative overflow-hidden rounded border border-zinc-200 dark:border-zinc-800"
-                >
-                  {img.dataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img.dataUrl}
-                      alt={img.name}
-                      className="h-20 w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-20 w-full items-center justify-center bg-zinc-100 text-[10px] text-zinc-500 dark:bg-zinc-900">
+              {doc.failureImages.map((img, i) => {
+                const src = img.dataUrl || img.url || "";
+                return (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded border border-zinc-200 dark:border-zinc-800"
+                  >
+                    {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={src}
+                        alt={img.name}
+                        className="h-20 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-full items-center justify-center bg-zinc-100 text-[10px] text-zinc-500 dark:bg-zinc-900">
+                        {img.name}
+                      </div>
+                    )}
+                    <div className="truncate bg-white/85 px-1 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-950/85 dark:text-zinc-300">
                       {img.name}
                     </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i)}
-                    disabled={disabled}
-                    className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white hover:bg-black/80"
-                    title="Remove"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      disabled={disabled}
+                      className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white hover:bg-black/80"
+                      title="Remove"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : null}
         </div>

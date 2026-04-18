@@ -1,0 +1,148 @@
+{
+  "id": "8D-260418-FG82",
+  "name": "Test_2",
+  "date": "2026-04-18",
+  "doc": {
+    "complaintDate": "2026-04-18",
+    "reportDate": "2026-04-18",
+    "customer": {},
+    "supplier": {},
+    "champion": {},
+    "coordinator": {},
+    "team": [],
+    "problem": "",
+    "failureImages": [],
+    "suspect": {
+      "inProduction": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "inWarehouse": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "inTransit": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "atCustomer": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      }
+    },
+    "immediate": {
+      "production_stop": {},
+      "customer_informed": {},
+      "internal_info": {},
+      "sample_request": {},
+      "warehouse_sort": {},
+      "derogation": {},
+      "sub_supplier_claim": {},
+      "additional_controls": {},
+      "other": {}
+    },
+    "firstOkPo": "",
+    "firstOkDate": "",
+    "occurrence": {
+      "categories": [],
+      "potentialCause": "",
+      "whys": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "rootCauses": [
+        {
+          "text": ""
+        },
+        {
+          "text": ""
+        }
+      ]
+    },
+    "detection": {
+      "categories": [],
+      "potentialCause": "",
+      "whys": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "rootCauses": [
+        {
+          "text": ""
+        },
+        {
+          "text": ""
+        }
+      ]
+    },
+    "plannedOccurrence": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "plannedDetection": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "riskOfNewFailure": "",
+    "implementedOccurrence": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "implementedDetection": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "preventive": {
+      "work_instruction": {},
+      "spc": {},
+      "control_plan": {},
+      "fmea": {},
+      "preventive_maintenance": {},
+      "other": {}
+    },
+    "transferredToSimilar": "",
+    "otherPartsAffected": "",
+    "otherPartsWhich": "",
+    "appreciation": ""
+  },
+  "meta": {},
+  "savedAt": "2026-04-18T19:12:24.853Z"
+}
