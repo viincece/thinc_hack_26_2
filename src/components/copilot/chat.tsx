@@ -38,7 +38,7 @@ export function Chat({
           S³ · SixSigmaSense
         </div>
         <div className="text-sm font-medium">
-          Claude, grounded in your Manex API
+          Grounded in your Manex API
         </div>
       </div>
 

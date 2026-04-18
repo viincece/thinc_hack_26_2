@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check, Image as ImageIcon, Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DEFECT_LIBRARY } from "./defect-library";
+import { DEFECT_LIBRARY, resolveFailureImageSrc } from "./defect-library";
 import {
   Checkbox,
   FieldShell,
@@ -432,7 +432,7 @@ export function SectionD2({
           {doc.failureImages.length > 0 ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {doc.failureImages.map((img, i) => {
-                const src = img.dataUrl || img.url || "";
+                const src = resolveFailureImageSrc(img) ?? "";
                 return (
                   <div
                     key={i}

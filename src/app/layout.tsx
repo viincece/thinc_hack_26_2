@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
+import { DraftsRail } from "@/components/drafts/drafts-rail";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-parchment text-olive-ink">
         <Nav />
-        <main className="flex-1">{children}</main>
+        <div className="flex flex-1 min-h-0">
+          <DraftsRail />
+          <main className="flex-1 min-w-0">{children}</main>
+        </div>
       </body>
     </html>
   );

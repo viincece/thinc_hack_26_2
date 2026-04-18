@@ -2,10 +2,34 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { EightDDoc, FieldMetaMap } from "@/components/copilot/eight-d-doc";
 
+/**
+ * Document kinds we persist. 8D is the only editor we ship today; FMEA and
+ * Analysis are reserved now so the schema + file-naming can accept new
+ * types the moment those editors land. Re-exported from the client-safe
+ * `drafts-kinds` module so browser bundles don't pull in `node:fs`.
+ */
+export { DRAFT_KINDS, type DraftKind } from "./drafts-kinds";
+import type { DraftKind } from "./drafts-kinds";
+
+const KIND_PREFIX: Record<DraftKind, string> = {
+  "8D": "8D",
+  FMEA: "FMEA",
+  Analysis: "ANL",
+};
+
+/** Infer kind from the id prefix for legacy files written before `kind` was tracked. */
+export function kindFromId(id: string): DraftKind {
+  if (id.startsWith("FMEA-")) return "FMEA";
+  // Older "Investigation" drafts used the INV- prefix — surface them as Analysis.
+  if (id.startsWith("ANL-") || id.startsWith("INV-")) return "Analysis";
+  return "8D";
+}
+
 export type DraftRecord = {
   id: string;
   name: string;
   date: string;
+  kind: DraftKind;
   filename: string;
   updatedAt: string;
   problemPreview: string;
@@ -17,6 +41,7 @@ export type DraftFile = {
   id: string;
   name: string;
   date: string;
+  kind: DraftKind;
   doc: EightDDoc;
   meta: FieldMetaMap;
   savedAt: string;
@@ -28,13 +53,13 @@ export async function ensureDraftsDir() {
   await fs.mkdir(DRAFTS_DIR, { recursive: true });
 }
 
-/** 8D-YYMMDD-XXXX — short, collision-avoidant */
-export function newDraftId(): string {
+/** <PREFIX>-YYMMDD-XXXX — short, collision-avoidant, prefix encodes kind */
+export function newDraftId(kind: DraftKind = "8D"): string {
   const d = new Date();
   const pad = (n: number) => n.toString().padStart(2, "0");
   const ymd = `${d.getFullYear().toString().slice(2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `8D-${ymd}-${rand}`;
+  return `${KIND_PREFIX[kind]}-${ymd}-${rand}`;
 }
 
 const SLUG_ALLOWED = /[^a-z0-9]+/g;
@@ -83,6 +108,7 @@ export async function listDrafts(): Promise<DraftRecord[]> {
         id: parsed.id,
         name: parsed.name,
         date: parsed.date,
+        kind: parsed.kind ?? kindFromId(parsed.id),
         filename: name,
         updatedAt: stat.mtime.toISOString(),
         problemPreview: (parsed.doc?.problem ?? "").slice(0, 140),
@@ -120,18 +146,20 @@ export async function loadDraft(id: string): Promise<DraftFile | null> {
 export async function saveDraft(input: {
   id?: string;
   name?: string;
+  kind?: DraftKind;
   doc: EightDDoc;
   meta: FieldMetaMap;
 }): Promise<DraftRecord> {
   await ensureDraftsDir();
-  const id = input.id ?? newDraftId();
+  const kind: DraftKind = input.kind ?? (input.id ? kindFromId(input.id) : "8D");
+  const id = input.id ?? newDraftId(kind);
   const date = new Date().toISOString().slice(0, 10);
   const resolvedName =
     (input.name && input.name.trim()) ||
     input.doc?.supplier?.articleName ||
     input.doc?.customer?.articleName ||
     (input.doc?.problem ? input.doc.problem.slice(0, 60) : "") ||
-    `8D report ${id}`;
+    `${kind} report ${id}`;
 
   // If a draft with this id already exists under a different filename
   // (e.g. the name changed), delete the old file so we don't duplicate.
@@ -145,6 +173,7 @@ export async function saveDraft(input: {
     id,
     name: resolvedName,
     date,
+    kind,
     doc: input.doc,
     meta: input.meta,
     savedAt: new Date().toISOString(),
@@ -156,6 +185,7 @@ export async function saveDraft(input: {
     id,
     name: resolvedName,
     date,
+    kind,
     filename,
     updatedAt: stat.mtime.toISOString(),
     problemPreview: (input.doc.problem ?? "").slice(0, 140),

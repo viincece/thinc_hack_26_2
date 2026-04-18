@@ -219,7 +219,7 @@ export default async function Home() {
           <CardDescription>
             This scaffold has the data layer wired. Upcoming: fault tree, BOM
             traceability, Sankey (supplier → batch → defect), operator Pareto,
-            and the Claude agent with SQL + wiki tools.
+            and the S³ agent with SQL + wiki tools.
           </CardDescription>
         </CardHeader>
       </Card>

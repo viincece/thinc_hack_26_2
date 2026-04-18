@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { EightDEditor } from "./eight-d-editor";
 import { Chat } from "./chat";
 import { ReportSidepanel } from "./report-sidepanel";
@@ -430,6 +431,20 @@ export function ReportWorkspace({
       /* ignore */
     }
   }, []);
+
+  // Deep-link: /report/new?draft=<id> auto-loads that draft on mount so the
+  // global DraftsRail can hand-off a click into the full editor. Guarded by
+  // a ref so it only runs once per query value.
+  const searchParams = useSearchParams();
+  const deeplinkDraft = searchParams.get("draft");
+  const lastDeeplinkRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!deeplinkDraft) return;
+    if (lastDeeplinkRef.current === deeplinkDraft) return;
+    if (draftId === deeplinkDraft) return;
+    lastDeeplinkRef.current = deeplinkDraft;
+    void onLoadDraft(deeplinkDraft);
+  }, [deeplinkDraft, draftId, onLoadDraft]);
 
   const displayedDraftName = draftName || deriveDefaultName(doc);
 

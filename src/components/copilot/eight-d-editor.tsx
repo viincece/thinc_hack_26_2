@@ -124,7 +124,7 @@ export function EightDEditor({
             onClick={onAutoDraftAll}
             disabled={disabled || busy}
             size="sm"
-            title="Ask Claude to populate every section using Manex + wiki"
+            title="Ask the agent to populate every section using Manex + wiki"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Auto-draft all sections

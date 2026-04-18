@@ -17,10 +17,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import type { DraftKind } from "@/lib/drafts-kinds";
+import { DraftKindChip } from "@/components/drafts/kind-chip";
+
 export type DraftSummary = {
   id: string;
   name: string;
   date: string;
+  kind: DraftKind;
   filename: string;
   updatedAt: string;
   problemPreview: string;
@@ -365,7 +369,7 @@ export function ReportSidepanel({
                     className="w-full text-left"
                   >
                     <div className="flex items-center gap-1.5">
-                      <FileText className="h-3 w-3 shrink-0 text-zinc-400" />
+                      <DraftKindChip kind={d.kind} size="xs" />
                       <span className="truncate font-medium">{d.name}</span>
                     </div>
                     <div className="mt-0.5 font-mono text-[10px] text-zinc-500">

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge, severityVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { imageUrl } from "@/lib/utils";
+import { photoForDefectCode } from "@/components/copilot/defect-library";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +55,7 @@ export default async function IncidentDetail({
     );
   }
 
-  const img = imageUrl(d.image_url);
+  const photo = photoForDefectCode(d.defect_code);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
@@ -117,18 +117,23 @@ export default async function IncidentDetail({
         <Card>
           <CardHeader>
             <CardTitle>Evidence</CardTitle>
+            {photo ? (
+              <CardDescription>
+                Reference photo — <span className="font-medium">{photo.label}</span>
+              </CardDescription>
+            ) : null}
           </CardHeader>
           <CardContent>
-            {img ? (
+            {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={img}
-                alt={d.defect_code}
-                className="w-full rounded-md border border-zinc-200 dark:border-zinc-800"
+                src={photo.url}
+                alt={`${d.defect_code} — ${photo.label}`}
+                className="w-full rounded-md border border-zinc-200 object-cover dark:border-zinc-800"
               />
             ) : (
               <div className="rounded-md border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
-                No inspection image.
+                No reference photo for <code>{d.defect_code}</code>.
               </div>
             )}
           </CardContent>

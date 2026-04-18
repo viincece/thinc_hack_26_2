@@ -1,0 +1,499 @@
+{
+  "id": "8D-260418-V74C",
+  "name": "LED 5mm rot",
+  "date": "2026-04-18",
+  "kind": "8D",
+  "doc": {
+    "complaintDate": "2026-03-26",
+    "reportDate": "2026-04-18",
+    "customer": {
+      "articleNr": "ART-00005",
+      "articleName": "Gateway Module GM-400",
+      "drawingIndex": "DWG-PM-00005 Rev A"
+    },
+    "supplier": {
+      "articleNr": "PM-00005",
+      "articleName": "LED 5mm rot",
+      "drawingIndex": "DWG-PM-00005 Rev A"
+    },
+    "champion": {},
+    "coordinator": {},
+    "team": [
+      {
+        "name": "user_071",
+        "department": "Montage Linie 2 (SEC-00010)",
+        "contact": "Operator who installed PM-00005 on PRD-00461"
+      },
+      {
+        "name": "user_089",
+        "department": "Rework / Montage Linie 2",
+        "contact": "Rework technician who diagnosed and repaired DEF-00098"
+      },
+      {
+        "name": "SEC-00010 Line Supervisor",
+        "department": "Montage Linie 2",
+        "contact": ""
+      },
+      {
+        "name": "SEC-00001 Inspection Lead",
+        "department": "Montage Linie 1 (Visual Inspection)",
+        "contact": ""
+      }
+    ],
+    "problem": "Gateway Module GM-400 (PRD-00461, order PO-00020) failed to power on at visual inspection (SEC-00001 / Montage Linie 1). Fuse blew immediately on power-up. Defect classified as MISSING_PART (high severity) with reported part PM-00005 (LED 5mm rot) at BOM position LED. Occurrence traced to Montage Linie 2 (SEC-00010). Part P-000226 from supplier batch SB-00005 (PartStream Industries, received 2025-10-12) was installed by user_071 on 2026-03-26. Rework RW-00088 by user_089: re-soldered the DC jack (dry joints found), tested continuity — 21 min, cost €57.96. Total defect cost: €148.94.",
+    "failureImages": [
+      {
+        "name": "defect_05_loose_wire.jpg"
+      }
+    ],
+    "suspect": {
+      "inProduction": {
+        "qty": 8,
+        "conducted": false,
+        "reference": "PO-00020: 9 units total, 1 defective (PRD-00461). Remaining 8 units (PRD-00431, PRD-00445, PRD-00462, PRD-00465, PRD-00470, PRD-00473, PRD-00485, PRD-00488) — none shipped."
+      },
+      "inWarehouse": {
+        "qty": "",
+        "conducted": false,
+        "reference": ""
+      },
+      "inTransit": {
+        "qty": 0,
+        "conducted": true,
+        "reference": "No units from PO-00020 have been shipped per product_action records."
+      },
+      "atCustomer": {
+        "qty": 0,
+        "conducted": true,
+        "reference": "No units from PO-00020 shipped to customer."
+      }
+    },
+    "immediate": {
+      "production_stop": {
+        "enabled": true,
+        "responsible": "SEC-00010 line supervisor",
+        "dueDate": "2026-03-27",
+        "description": "Hold remaining 8 units from PO-00020 at Montage Linie 2. Perform power-on continuity check on all DC jack solder joints before releasing.",
+        "effectiveness": 0
+      },
+      "customer_informed": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "Internal defect — no units shipped. Customer notification not required at this stage.",
+        "effectiveness": 0
+      },
+      "internal_info": {
+        "enabled": true,
+        "responsible": "Quality Engineering",
+        "dueDate": "2026-03-27",
+        "description": "Notify Montage Linie 2 team leads of dry solder joint finding on DC jack. Emphasize visual check of solder joints before unit moves downstream.",
+        "effectiveness": 0
+      },
+      "sample_request": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "Defective unit PRD-00461 retained in-house after rework (RW-00088). No external sample needed.",
+        "effectiveness": 0
+      },
+      "warehouse_sort": {
+        "enabled": true,
+        "responsible": "Warehouse / Quality",
+        "dueDate": "2026-03-28",
+        "description": "Sort all PO-00020 units held in warehouse/WIP for DC jack solder joint integrity. Power-on test each unit.",
+        "effectiveness": 0
+      },
+      "derogation": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "Not applicable — defect is safety-critical (fuse blown). No derogation permissible.",
+        "effectiveness": 0
+      },
+      "sub_supplier_claim": {
+        "enabled": false,
+        "responsible": "",
+        "dueDate": "",
+        "description": "Root cause points to assembly process (dry solder), not incoming material defect. Sub-supplier claim against PartStream Industries (SB-00005) not warranted at this stage.",
+        "effectiveness": 0
+      },
+      "additional_controls": {
+        "enabled": true,
+        "responsible": "SEC-00010 line supervisor",
+        "dueDate": "2026-04-01",
+        "description": "Introduce temporary 100% power-on test at Montage Linie 2 (SEC-00010) exit gate for all GM-400 units until corrective action is verified.",
+        "effectiveness": 0
+      },
+      "other": {
+        "enabled": true,
+        "responsible": "Quality Engineering",
+        "dueDate": "2026-03-28",
+        "description": "Re-classify DEF-00098 defect code from MISSING_PART to SOLDER_COLD or CONNECTION_OPEN to correct the trend data.",
+        "effectiveness": 0
+      }
+    },
+    "firstOkPo": "",
+    "firstOkDate": "",
+    "occurrence": {
+      "categories": [
+        "Man",
+        "Method"
+      ],
+      "potentialCause": "LED (PM-00005) installed at BOM position LED by user_071, but rework revealed dry solder joints on the DC jack — suggesting an assembly process failure at Montage Linie 2 (SEC-00010). The defect code MISSING_PART may be a misclassification; the symptom (fuse blown immediately, no power) is more consistent with a solder/connection defect on the power path than a literally missing LED.",
+      "whys": [
+        "Why did the fuse blow? — Short circuit or excessive current draw at power-on due to dry solder joints on the DC jack.",
+        "Why were the DC jack joints dry? — Insufficient solder application or wrong soldering temperature profile at SEC-00010.",
+        "Why was the soldering inadequate? — Operator may not have followed the work instruction for hand-soldering the DC jack, or the soldering iron tip was worn.",
+        "Why was this not caught earlier? — No in-process electrical continuity check between Montage Linie 2 and downstream inspection.",
+        "Why is the defect coded MISSING_PART? — Visual inspection at SEC-00001 saw the non-illuminated LED and coded it as missing; root cause is actually a solder/connection defect upstream."
+      ],
+      "rootCauses": [
+        {
+          "text": "Dry solder joints on DC jack at Montage Linie 2 (SEC-00010) causing short/open circuit and fuse blow on power-up",
+          "participation": 70
+        },
+        {
+          "text": "Possible work instruction non-compliance or soldering tool degradation at SEC-00010",
+          "participation": 30
+        }
+      ]
+    },
+    "detection": {
+      "categories": [
+        "Method",
+        "Measurement"
+      ],
+      "potentialCause": "Defect was detected at visual inspection (SEC-00001, Montage Linie 1) only when the unit failed to power on. There is no in-process electrical test after Montage Linie 2 assembly that would catch dry solder joints before the unit reaches final inspection.",
+      "whys": [
+        "Why was the defect not detected at SEC-00010? — No in-process continuity or power-on test is performed at Montage Linie 2 after soldering.",
+        "Why is there no in-process test? — The control plan for GM-400 may not include a post-solder electrical check at this station.",
+        "Why wasn't this gap identified before? — This is the only MISSING_PART defect for ART-00005 at SEC-00010, so the gap was not visible in trend data.",
+        "Why did visual inspection at SEC-00001 misclassify it? — The LED not lighting was interpreted as a missing part rather than a connection defect.",
+        "Why is misclassification a problem? — Incorrect defect coding obscures the true root cause and delays corrective action."
+      ],
+      "rootCauses": [
+        {
+          "text": "No in-process electrical verification after hand-soldering at Montage Linie 2 (SEC-00010)",
+          "participation": 60
+        },
+        {
+          "text": "Defect code misclassification at visual inspection — MISSING_PART instead of SOLDER_COLD or CONNECTION_OPEN",
+          "participation": 40
+        }
+      ]
+    },
+    "plannedOccurrence": [
+      {
+        "rootCauseNo": 1,
+        "description": "Review and update soldering work instruction for DC jack at Montage Linie 2 (SEC-00010). Include solder temperature profile, minimum solder fill criteria, and visual acceptance standard for through-hole joints.",
+        "responsible": "Process Engineering / SEC-00010 supervisor",
+        "date": "2026-04-15"
+      },
+      {
+        "rootCauseNo": 2,
+        "description": "Inspect and recalibrate/replace soldering iron tips at SEC-00010. Establish a tip replacement schedule (preventive maintenance).",
+        "responsible": "Maintenance / SEC-00010",
+        "date": "2026-04-10"
+      }
+    ],
+    "plannedDetection": [
+      {
+        "rootCauseNo": 1,
+        "description": "Add in-process power-on / continuity test at SEC-00010 exit gate for GM-400 units. Update control plan accordingly.",
+        "responsible": "Test Engineering",
+        "date": "2026-04-20"
+      },
+      {
+        "rootCauseNo": 2,
+        "description": "Retrain visual inspection operators at SEC-00001 on defect code classification: distinguish MISSING_PART from SOLDER_COLD / CONNECTION_OPEN symptoms.",
+        "responsible": "Quality Engineering",
+        "date": "2026-04-10"
+      }
+    ],
+    "riskOfNewFailure": "yes",
+    "implementedOccurrence": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "implementedDetection": [
+      {
+        "rootCauseNo": "1"
+      },
+      {
+        "rootCauseNo": "2"
+      },
+      {
+        "rootCauseNo": "3"
+      }
+    ],
+    "preventive": {
+      "work_instruction": {
+        "applicable": "yes",
+        "responsible": "Process Engineering",
+        "dueDate": "2026-04-15",
+        "endDate": ""
+      },
+      "spc": {
+        "applicable": "no",
+        "responsible": "",
+        "dueDate": "",
+        "endDate": ""
+      },
+      "control_plan": {
+        "applicable": "yes",
+        "responsible": "Quality Engineering",
+        "dueDate": "2026-04-20",
+        "endDate": ""
+      },
+      "fmea": {
+        "applicable": "yes",
+        "responsible": "Quality Engineering",
+        "dueDate": "2026-04-25",
+        "endDate": ""
+      },
+      "preventive_maintenance": {
+        "applicable": "yes",
+        "responsible": "Maintenance",
+        "dueDate": "2026-04-10",
+        "endDate": ""
+      },
+      "other": {
+        "applicable": "yes",
+        "responsible": "Quality Engineering",
+        "dueDate": "2026-04-10",
+        "endDate": ""
+      }
+    },
+    "transferredToSimilar": "yes",
+    "otherPartsAffected": "no",
+    "otherPartsWhich": "N/A — root cause is assembly process at SEC-00010, not a part defect. However, any through-hole soldered connector at Montage Linie 2 could be affected by the same process gap.",
+    "appreciation": ""
+  },
+  "meta": {
+    "complaintDate": {
+      "status": "filled",
+      "source": "DEF-00098"
+    },
+    "reportDate": {
+      "status": "filled",
+      "source": "DEF-00098",
+      "note": "Today's date used as report creation date."
+    },
+    "customer.articleNr": {
+      "status": "filled",
+      "source": "DEF-00098, PRD-00461"
+    },
+    "customer.articleName": {
+      "status": "filled",
+      "source": "ART-00005"
+    },
+    "customer.drawingIndex": {
+      "status": "suggested",
+      "source": "PM-00005",
+      "note": "Drawing/rev of the reported part PM-00005; article-level drawing may differ."
+    },
+    "customer.complaintNo": {
+      "status": "needs_input",
+      "note": "Enter the customer complaint/reference number if one was provided externally."
+    },
+    "customer.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter the customer contact person name. This is an internal defect — may not apply."
+    },
+    "customer.email": {
+      "status": "needs_input",
+      "note": "Enter customer email if applicable."
+    },
+    "customer.phone": {
+      "status": "needs_input",
+      "note": "Enter customer phone if applicable."
+    },
+    "supplier.articleNr": {
+      "status": "filled",
+      "source": "DEF-00098, PM-00005"
+    },
+    "supplier.articleName": {
+      "status": "filled",
+      "source": "PM-00005"
+    },
+    "supplier.complaintNo": {
+      "status": "needs_input",
+      "note": "Assign a supplier complaint number if a sub-supplier claim is opened against PartStream Industries (SB-00005)."
+    },
+    "supplier.contactPerson": {
+      "status": "needs_input",
+      "note": "Enter PartStream Industries contact person for batch SB-00005."
+    },
+    "supplier.email": {
+      "status": "needs_input",
+      "note": "Enter PartStream Industries email."
+    },
+    "supplier.phone": {
+      "status": "needs_input",
+      "note": "Enter PartStream Industries phone."
+    },
+    "problem": {
+      "status": "filled",
+      "source": "DEF-00098, PRD-00461, PPI-002766, RW-00088, SB-00005, P-000226"
+    },
+    "failureImages": {
+      "status": "filled",
+      "source": "DEF-00098"
+    },
+    "supplier.drawingIndex": {
+      "status": "filled",
+      "source": "PM-00005"
+    },
+    "occurrence": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088, PPI-002766, SEC-00010"
+    },
+    "detection": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088, SEC-00010"
+    },
+    "suspect.inProduction": {
+      "status": "filled",
+      "source": "PO-00020, PRD-00461"
+    },
+    "suspect.inWarehouse": {
+      "status": "needs_input",
+      "note": "Check if any PO-00020 units have been moved to finished goods warehouse. None show as shipped in Manex, but warehouse location is not tracked."
+    },
+    "suspect.inTransit": {
+      "status": "filled",
+      "source": "PO-00020"
+    },
+    "suspect.atCustomer": {
+      "status": "filled",
+      "source": "PO-00020"
+    },
+    "immediate.production_stop": {
+      "status": "suggested",
+      "source": "DEF-00098, PO-00020, RW-00088"
+    },
+    "immediate.customer_informed": {
+      "status": "suggested",
+      "source": "PO-00020"
+    },
+    "immediate.internal_info": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088"
+    },
+    "immediate.sample_request": {
+      "status": "suggested",
+      "source": "RW-00088"
+    },
+    "immediate.warehouse_sort": {
+      "status": "suggested",
+      "source": "PO-00020, DEF-00098"
+    },
+    "immediate.derogation": {
+      "status": "suggested",
+      "source": "DEF-00098"
+    },
+    "immediate.sub_supplier_claim": {
+      "status": "suggested",
+      "source": "SB-00005, RW-00088"
+    },
+    "immediate.additional_controls": {
+      "status": "suggested",
+      "source": "DEF-00098, SEC-00010"
+    },
+    "immediate.other": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088"
+    },
+    "plannedOccurrence": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088, SEC-00010"
+    },
+    "plannedDetection": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088, SEC-00010, SEC-00001"
+    },
+    "implementedOccurrence": {
+      "status": "needs_input",
+      "note": "Update once the planned occurrence corrective actions (WI revision, soldering iron maintenance) have been executed and verified. Record date, effectiveness rating, and any notes."
+    },
+    "implementedDetection": {
+      "status": "needs_input",
+      "note": "Update once the in-process test at SEC-00010 is operational and operator retraining at SEC-00001 is complete. Record date, effectiveness rating, and notes."
+    },
+    "firstOkPo": {
+      "status": "needs_input",
+      "note": "Enter the first production order number after corrective actions are implemented and verified effective."
+    },
+    "firstOkDate": {
+      "status": "needs_input",
+      "note": "Enter the date when the first OK unit was produced after corrective actions are in place."
+    },
+    "preventive.work_instruction": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088"
+    },
+    "preventive.spc": {
+      "status": "suggested",
+      "source": "DEF-00098"
+    },
+    "preventive.control_plan": {
+      "status": "suggested",
+      "source": "DEF-00098, SEC-00010"
+    },
+    "preventive.fmea": {
+      "status": "suggested",
+      "source": "DEF-00098, ART-00005, OBS-BOM-ART-00005"
+    },
+    "preventive.preventive_maintenance": {
+      "status": "suggested",
+      "source": "RW-00088"
+    },
+    "preventive.other": {
+      "status": "suggested",
+      "source": "DEF-00098",
+      "note": "Issue a classification quick-reference card distinguishing MISSING_PART from SOLDER_COLD/CONNECTION_OPEN at visual inspection."
+    },
+    "riskOfNewFailure": {
+      "status": "suggested",
+      "source": "DEF-00098, SEC-00010"
+    },
+    "transferredToSimilar": {
+      "status": "suggested",
+      "source": "SEC-00010"
+    },
+    "otherPartsAffected": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088"
+    },
+    "otherPartsWhich": {
+      "status": "suggested",
+      "source": "DEF-00098, RW-00088, SEC-00010"
+    },
+    "champion": {
+      "status": "needs_input",
+      "note": "Enter the management sponsor / champion for this 8D (typically Quality Manager or Plant Manager)."
+    },
+    "coordinator": {
+      "status": "needs_input",
+      "note": "Enter the Quality Engineer coordinating this 8D investigation."
+    },
+    "team": {
+      "status": "suggested",
+      "source": "PPI-002766, RW-00088, SEC-00010, SEC-00001",
+      "note": "Replace user IDs and role placeholders with actual names. Add Process Engineering and Test Engineering representatives."
+    },
+    "appreciation": {
+      "status": "needs_input",
+      "note": "Complete after all corrective actions are implemented and effectiveness is confirmed (target: zero recurrence over 4 weeks). Include lessons learned, team recognition, and management sign-off date."
+    }
+  },
+  "savedAt": "2026-04-18T20:33:26.042Z"
+}
