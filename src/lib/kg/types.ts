@@ -12,6 +12,8 @@ export type EntityKind =
   | "Supplier"
   | "Batch"
   | "Article"
+  | "Factory"
+  | "Line"
   | "Section"
   | "Operator"
   | "BomPosition"

@@ -37,3 +37,320 @@
 {"kind":"link","rel":"INDICATED_BY","from":"operator-handling-cosmetic","to":"defectcode:LABEL_MISALIGN"}
 {"kind":"observation","id":"OBS-S4-01","text":"Cosmetic defects (VISUAL_SCRATCH, LABEL_MISALIGN) at severity=low cluster on orders PO-00012, PO-00018, PO-00024. rework.user_id 'user_042' dominates these three orders.","confidence":0.9,"first_seen":"2026-04-18T15:37:47.655Z","about_entities":["operator:user_042","PO-00012","PO-00018","PO-00024","defectcode:VISUAL_SCRATCH","defectcode:LABEL_MISALIGN"],"about_concepts":["operator-handling-cosmetic"],"evidenced_by":"SRC-DATA-PATTERNS"}
 {"kind":"log","id":"LOG-1776526667771-2705","ts":"2026-04-18T15:37:47.771Z","action":"seed","summary":"Seeded four root-cause stories from DATA_PATTERNS.md."}
+{"kind":"entity","id":"FAC-00001","entity_kind":"Factory","label":"Werk Augsburg (AUG)","manex_table":"factory","manex_id":"FAC-00001","body":"Factory in DE."}
+{"kind":"entity","id":"FAC-00002","entity_kind":"Factory","label":"Werk Dresden (DRE)","manex_table":"factory","manex_id":"FAC-00002","body":"Factory in DE."}
+{"kind":"entity","id":"LIN-00001","entity_kind":"Line","label":"Linie 1 (North)","manex_table":"line","manex_id":"LIN-00001","body":"assembly line."}
+{"kind":"link","rel":"BELONGS_TO","from":"LIN-00001","to":"FAC-00001"}
+{"kind":"entity","id":"LIN-00002","entity_kind":"Line","label":"Linie 2 (South)","manex_table":"line","manex_id":"LIN-00002","body":"assembly line."}
+{"kind":"link","rel":"BELONGS_TO","from":"LIN-00002","to":"FAC-00001"}
+{"kind":"entity","id":"LIN-00003","entity_kind":"Line","label":"Linie 1 (East)","manex_table":"line","manex_id":"LIN-00003","body":"test line."}
+{"kind":"link","rel":"BELONGS_TO","from":"LIN-00003","to":"FAC-00002"}
+{"kind":"entity","id":"LIN-00004","entity_kind":"Line","label":"Linie 2 (West)","manex_table":"line","manex_id":"LIN-00004","body":"packaging line."}
+{"kind":"link","rel":"BELONGS_TO","from":"LIN-00004","to":"FAC-00002"}
+{"kind":"entity","id":"SEC-00001","entity_kind":"Section","label":"Montage Linie 1","manex_table":"section","manex_id":"SEC-00001","body":"montage station (seq 1)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00001","to":"LIN-00001"}
+{"kind":"entity","id":"SEC-00002","entity_kind":"Section","label":"Pruefung Linie 1","manex_table":"section","manex_id":"SEC-00002","body":"pruefung station (seq 2)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00002","to":"LIN-00001"}
+{"kind":"entity","id":"SEC-00003","entity_kind":"Section","label":"Verpackung Linie 1","manex_table":"section","manex_id":"SEC-00003","body":"verpackung station (seq 3)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00003","to":"LIN-00001"}
+{"kind":"entity","id":"SEC-00004","entity_kind":"Section","label":"Montage Linie 2","manex_table":"section","manex_id":"SEC-00004","body":"montage station (seq 1)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00004","to":"LIN-00002"}
+{"kind":"entity","id":"SEC-00005","entity_kind":"Section","label":"Pruefung Linie 2","manex_table":"section","manex_id":"SEC-00005","body":"pruefung station (seq 2)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00005","to":"LIN-00002"}
+{"kind":"entity","id":"SEC-00006","entity_kind":"Section","label":"Verpackung Linie 2","manex_table":"section","manex_id":"SEC-00006","body":"verpackung station (seq 3)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00006","to":"LIN-00002"}
+{"kind":"entity","id":"SEC-00007","entity_kind":"Section","label":"Montage Linie 1","manex_table":"section","manex_id":"SEC-00007","body":"montage station (seq 1)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00007","to":"LIN-00003"}
+{"kind":"entity","id":"SEC-00008","entity_kind":"Section","label":"Pruefung Linie 1","manex_table":"section","manex_id":"SEC-00008","body":"pruefung station (seq 2)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00008","to":"LIN-00003"}
+{"kind":"entity","id":"SEC-00009","entity_kind":"Section","label":"Verpackung Linie 1","manex_table":"section","manex_id":"SEC-00009","body":"verpackung station (seq 3)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00009","to":"LIN-00003"}
+{"kind":"entity","id":"SEC-00010","entity_kind":"Section","label":"Montage Linie 2","manex_table":"section","manex_id":"SEC-00010","body":"montage station (seq 1)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00010","to":"LIN-00004"}
+{"kind":"entity","id":"SEC-00011","entity_kind":"Section","label":"Pruefung Linie 2","manex_table":"section","manex_id":"SEC-00011","body":"pruefung station (seq 2)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00011","to":"LIN-00004"}
+{"kind":"entity","id":"SEC-00012","entity_kind":"Section","label":"Verpackung Linie 2","manex_table":"section","manex_id":"SEC-00012","body":"verpackung station (seq 3)."}
+{"kind":"link","rel":"BELONGS_TO","from":"SEC-00012","to":"LIN-00004"}
+{"kind":"entity","id":"ART-00001","entity_kind":"Article","label":"Motor Controller MC-200 (ART-00001)","manex_table":"article","manex_id":"ART-00001","body":"Product article. Motor Controller MC-200."}
+{"kind":"entity","id":"ART-00002","entity_kind":"Article","label":"Sensor Unit SU-100 (ART-00002)","manex_table":"article","manex_id":"ART-00002","body":"Product article. Sensor Unit SU-100."}
+{"kind":"entity","id":"ART-00003","entity_kind":"Article","label":"Power Distribution PD-300 (ART-00003)","manex_table":"article","manex_id":"ART-00003","body":"Product article. Power Distribution PD-300."}
+{"kind":"entity","id":"ART-00004","entity_kind":"Article","label":"Controller Board CB-150 (ART-00004)","manex_table":"article","manex_id":"ART-00004","body":"Product article. Controller Board CB-150."}
+{"kind":"entity","id":"ART-00005","entity_kind":"Article","label":"Gateway Module GM-400 (ART-00005)","manex_table":"article","manex_id":"ART-00005","body":"Product article. Gateway Module GM-400."}
+{"kind":"entity","id":"PM-00001","entity_kind":"Part","label":"PM-00001 — Kondensator 10uF 16V","manex_table":"part_master","manex_id":"PM-00001","body":"Kondensator 10uF 16V\ncommodity: capacitor"}
+{"kind":"entity","id":"PM-00002","entity_kind":"Part","label":"PM-00002 — Kondensator 47uF 25V","manex_table":"part_master","manex_id":"PM-00002","body":"Kondensator 47uF 25V\ncommodity: capacitor"}
+{"kind":"entity","id":"PM-00003","entity_kind":"Part","label":"PM-00003 — Widerstand 100R 0.25W","manex_table":"part_master","manex_id":"PM-00003","body":"Widerstand 100R 0.25W\ncommodity: resistor"}
+{"kind":"entity","id":"PM-00004","entity_kind":"Part","label":"PM-00004 — Widerstand 1k 0.25W","manex_table":"part_master","manex_id":"PM-00004","body":"Widerstand 1k 0.25W\ncommodity: resistor"}
+{"kind":"entity","id":"PM-00005","entity_kind":"Part","label":"PM-00005 — LED 5mm rot","manex_table":"part_master","manex_id":"PM-00005","body":"LED 5mm rot\ncommodity: diode"}
+{"kind":"entity","id":"PM-00006","entity_kind":"Part","label":"PM-00006 — Mikrocontroller STM32F4","manex_table":"part_master","manex_id":"PM-00006","body":"Mikrocontroller STM32F4\ncommodity: ic"}
+{"kind":"entity","id":"PM-00007","entity_kind":"Part","label":"PM-00007 — Spannungsregler LM7805","manex_table":"part_master","manex_id":"PM-00007","body":"Spannungsregler LM7805\ncommodity: ic"}
+{"kind":"entity","id":"PM-00008","entity_kind":"Part","label":"PM-00008 — Kondensator 100uF X7R","manex_table":"part_master","manex_id":"PM-00008","body":"Kondensator 100uF X7R\ncommodity: capacitor"}
+{"kind":"entity","id":"PM-00009","entity_kind":"Part","label":"PM-00009 — Diode Schottky SK34","manex_table":"part_master","manex_id":"PM-00009","body":"Diode Schottky SK34\ncommodity: diode"}
+{"kind":"entity","id":"PM-00010","entity_kind":"Part","label":"PM-00010 — Stecker 10-pin SPH","manex_table":"part_master","manex_id":"PM-00010","body":"Stecker 10-pin SPH\ncommodity: connector"}
+{"kind":"entity","id":"PM-00011","entity_kind":"Part","label":"PM-00011 — Gehaeuse Aluminium A200","manex_table":"part_master","manex_id":"PM-00011","body":"Gehaeuse Aluminium A200\ncommodity: housing"}
+{"kind":"entity","id":"PM-00012","entity_kind":"Part","label":"PM-00012 — Schrauben M3x8 verz.","manex_table":"part_master","manex_id":"PM-00012","body":"Schrauben M3x8 verz.\ncommodity: fastener"}
+{"kind":"entity","id":"PM-00013","entity_kind":"Part","label":"PM-00013 — Waermeleitpaste WLP-G","manex_table":"part_master","manex_id":"PM-00013","body":"Waermeleitpaste WLP-G\ncommodity: consumable"}
+{"kind":"entity","id":"PM-00014","entity_kind":"Part","label":"PM-00014 — Platine Basis PCB-4L","manex_table":"part_master","manex_id":"PM-00014","body":"Platine Basis PCB-4L\ncommodity: pcb"}
+{"kind":"entity","id":"PM-00015","entity_kind":"Part","label":"PM-00015 — Widerstand 4.7k Thermal","manex_table":"part_master","manex_id":"PM-00015","body":"Widerstand 4.7k Thermal\ncommodity: resistor"}
+{"kind":"entity","id":"PM-00016","entity_kind":"Part","label":"PM-00016 — Optokoppler PC817","manex_table":"part_master","manex_id":"PM-00016","body":"Optokoppler PC817\ncommodity: ic"}
+{"kind":"entity","id":"PM-00017","entity_kind":"Part","label":"PM-00017 — Relais 12V SPDT","manex_table":"part_master","manex_id":"PM-00017","body":"Relais 12V SPDT\ncommodity: relay"}
+{"kind":"entity","id":"PM-00018","entity_kind":"Part","label":"PM-00018 — Sicherung Traege T1A","manex_table":"part_master","manex_id":"PM-00018","body":"Sicherung Traege T1A\ncommodity: fuse"}
+{"kind":"entity","id":"PM-00019","entity_kind":"Part","label":"PM-00019 — Display OLED 128x64","manex_table":"part_master","manex_id":"PM-00019","body":"Display OLED 128x64\ncommodity: display"}
+{"kind":"entity","id":"PM-00020","entity_kind":"Part","label":"PM-00020 — Tastatur-Modul 4x4","manex_table":"part_master","manex_id":"PM-00020","body":"Tastatur-Modul 4x4\ncommodity: input"}
+{"kind":"entity","id":"supplier:SUP-01","entity_kind":"Supplier","label":"ElektroParts GmbH","manex_table":"supplier_batch","manex_id":"supplier:SUP-01","body":"Supplier referenced in supplier_batch."}
+{"kind":"entity","id":"supplier:SUP-02","entity_kind":"Supplier","label":"Mechanik-Werk AG","manex_table":"supplier_batch","manex_id":"supplier:SUP-02","body":"Supplier referenced in supplier_batch."}
+{"kind":"entity","id":"supplier:SUP-03","entity_kind":"Supplier","label":"TechSupply Europe","manex_table":"supplier_batch","manex_id":"supplier:SUP-03","body":"Supplier referenced in supplier_batch."}
+{"kind":"entity","id":"supplier:SUP-04","entity_kind":"Supplier","label":"PartStream Industries","manex_table":"supplier_batch","manex_id":"supplier:SUP-04","body":"Supplier referenced in supplier_batch."}
+{"kind":"entity","id":"SB-00001","entity_kind":"Batch","label":"SB-00001 (PM-00001)","manex_table":"supplier_batch","manex_id":"SB-00001","body":"Batch number: B00001\nSupplier: ElektroParts GmbH\nReceived: 2025-09-15\nQty: 500"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00001","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00001","to":"PM-00001"}
+{"kind":"entity","id":"SB-00002","entity_kind":"Batch","label":"SB-00002 (PM-00002)","manex_table":"supplier_batch","manex_id":"SB-00002","body":"Batch number: B00002\nSupplier: Mechanik-Werk AG\nReceived: 2025-09-20\nQty: 400"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00002","to":"supplier:SUP-02"}
+{"kind":"link","rel":"OF_PART","from":"SB-00002","to":"PM-00002"}
+{"kind":"entity","id":"SB-00003","entity_kind":"Batch","label":"SB-00003 (PM-00003)","manex_table":"supplier_batch","manex_id":"SB-00003","body":"Batch number: B00003\nSupplier: TechSupply Europe\nReceived: 2025-10-05\nQty: 600"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00003","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00003","to":"PM-00003"}
+{"kind":"entity","id":"SB-00004","entity_kind":"Batch","label":"SB-00004 (PM-00004)","manex_table":"supplier_batch","manex_id":"SB-00004","body":"Batch number: B00004\nSupplier: TechSupply Europe\nReceived: 2025-10-05\nQty: 500"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00004","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00004","to":"PM-00004"}
+{"kind":"entity","id":"SB-00005","entity_kind":"Batch","label":"SB-00005 (PM-00005)","manex_table":"supplier_batch","manex_id":"SB-00005","body":"Batch number: B00005\nSupplier: PartStream Industries\nReceived: 2025-10-12\nQty: 300"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00005","to":"supplier:SUP-04"}
+{"kind":"link","rel":"OF_PART","from":"SB-00005","to":"PM-00005"}
+{"kind":"entity","id":"SB-00006","entity_kind":"Batch","label":"SB-00006 (PM-00006)","manex_table":"supplier_batch","manex_id":"SB-00006","body":"Batch number: B00006\nSupplier: ElektroParts GmbH\nReceived: 2025-10-15\nQty: 200"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00006","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00006","to":"PM-00006"}
+{"kind":"entity","id":"SB-00007","entity_kind":"Batch","label":"SB-00007 (PM-00007)","manex_table":"supplier_batch","manex_id":"SB-00007","body":"Batch number: B00007\nSupplier: ElektroParts GmbH\nReceived: 2025-11-01\nQty: 250"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00007","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00007","to":"PM-00007"}
+{"kind":"entity","id":"SB-00008","entity_kind":"Batch","label":"SB-00008 (PM-00008)","manex_table":"supplier_batch","manex_id":"SB-00008","body":"Batch number: B00008\nSupplier: ElektroParts GmbH\nReceived: 2025-11-10\nQty: 800"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00008","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00008","to":"PM-00008"}
+{"kind":"entity","id":"SB-00009","entity_kind":"Batch","label":"SB-00009 (PM-00008)","manex_table":"supplier_batch","manex_id":"SB-00009","body":"Batch number: B00009\nSupplier: ElektroParts GmbH\nReceived: 2026-02-03\nQty: 600"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00009","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00009","to":"PM-00008"}
+{"kind":"entity","id":"SB-00010","entity_kind":"Batch","label":"SB-00010 (PM-00008)","manex_table":"supplier_batch","manex_id":"SB-00010","body":"Batch number: B00010\nSupplier: ElektroParts GmbH\nReceived: 2026-03-01\nQty: 400"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00010","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00010","to":"PM-00008"}
+{"kind":"entity","id":"SB-00011","entity_kind":"Batch","label":"SB-00011 (PM-00009)","manex_table":"supplier_batch","manex_id":"SB-00011","body":"Batch number: B00011\nSupplier: PartStream Industries\nReceived: 2025-11-20\nQty: 300"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00011","to":"supplier:SUP-04"}
+{"kind":"link","rel":"OF_PART","from":"SB-00011","to":"PM-00009"}
+{"kind":"entity","id":"SB-00012","entity_kind":"Batch","label":"SB-00012 (PM-00010)","manex_table":"supplier_batch","manex_id":"SB-00012","body":"Batch number: B00012\nSupplier: Mechanik-Werk AG\nReceived: 2025-10-08\nQty: 400"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00012","to":"supplier:SUP-02"}
+{"kind":"link","rel":"OF_PART","from":"SB-00012","to":"PM-00010"}
+{"kind":"entity","id":"SB-00013","entity_kind":"Batch","label":"SB-00013 (PM-00011)","manex_table":"supplier_batch","manex_id":"SB-00013","body":"Batch number: B00013\nSupplier: Mechanik-Werk AG\nReceived: 2025-10-10\nQty: 250"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00013","to":"supplier:SUP-02"}
+{"kind":"link","rel":"OF_PART","from":"SB-00013","to":"PM-00011"}
+{"kind":"entity","id":"SB-00014","entity_kind":"Batch","label":"SB-00014 (PM-00012)","manex_table":"supplier_batch","manex_id":"SB-00014","body":"Batch number: B00014\nSupplier: Mechanik-Werk AG\nReceived: 2025-10-01\nQty: 1000"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00014","to":"supplier:SUP-02"}
+{"kind":"link","rel":"OF_PART","from":"SB-00014","to":"PM-00012"}
+{"kind":"entity","id":"SB-00015","entity_kind":"Batch","label":"SB-00015 (PM-00013)","manex_table":"supplier_batch","manex_id":"SB-00015","body":"Batch number: B00015\nSupplier: PartStream Industries\nReceived: 2025-10-15\nQty: 300"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00015","to":"supplier:SUP-04"}
+{"kind":"link","rel":"OF_PART","from":"SB-00015","to":"PM-00013"}
+{"kind":"entity","id":"SB-00016","entity_kind":"Batch","label":"SB-00016 (PM-00014)","manex_table":"supplier_batch","manex_id":"SB-00016","body":"Batch number: B00016\nSupplier: TechSupply Europe\nReceived: 2025-10-20\nQty: 300"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00016","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00016","to":"PM-00014"}
+{"kind":"entity","id":"SB-00017","entity_kind":"Batch","label":"SB-00017 (PM-00015)","manex_table":"supplier_batch","manex_id":"SB-00017","body":"Batch number: B00017\nSupplier: TechSupply Europe\nReceived: 2025-09-25\nQty: 400"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00017","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00017","to":"PM-00015"}
+{"kind":"entity","id":"SB-00018","entity_kind":"Batch","label":"SB-00018 (PM-00016)","manex_table":"supplier_batch","manex_id":"SB-00018","body":"Batch number: B00018\nSupplier: TechSupply Europe\nReceived: 2025-10-25\nQty: 250"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00018","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00018","to":"PM-00016"}
+{"kind":"entity","id":"SB-00019","entity_kind":"Batch","label":"SB-00019 (PM-00017)","manex_table":"supplier_batch","manex_id":"SB-00019","body":"Batch number: B00019\nSupplier: ElektroParts GmbH\nReceived: 2025-11-05\nQty: 200"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00019","to":"supplier:SUP-01"}
+{"kind":"link","rel":"OF_PART","from":"SB-00019","to":"PM-00017"}
+{"kind":"entity","id":"SB-00020","entity_kind":"Batch","label":"SB-00020 (PM-00018)","manex_table":"supplier_batch","manex_id":"SB-00020","body":"Batch number: B00020\nSupplier: PartStream Industries\nReceived: 2025-11-12\nQty: 300"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00020","to":"supplier:SUP-04"}
+{"kind":"link","rel":"OF_PART","from":"SB-00020","to":"PM-00018"}
+{"kind":"entity","id":"SB-00021","entity_kind":"Batch","label":"SB-00021 (PM-00019)","manex_table":"supplier_batch","manex_id":"SB-00021","body":"Batch number: B00021\nSupplier: TechSupply Europe\nReceived: 2025-11-08\nQty: 200"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00021","to":"supplier:SUP-03"}
+{"kind":"link","rel":"OF_PART","from":"SB-00021","to":"PM-00019"}
+{"kind":"entity","id":"SB-00022","entity_kind":"Batch","label":"SB-00022 (PM-00020)","manex_table":"supplier_batch","manex_id":"SB-00022","body":"Batch number: B00022\nSupplier: PartStream Industries\nReceived: 2025-11-18\nQty: 200"}
+{"kind":"link","rel":"SUPPLIED_BY","from":"SB-00022","to":"supplier:SUP-04"}
+{"kind":"link","rel":"OF_PART","from":"SB-00022","to":"PM-00020"}
+{"kind":"entity","id":"bompos:ART-00001:U1","entity_kind":"BomPosition","label":"U1 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00002","body":"BOM position U1 on article ART-00001. Populated by PM-00006. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:U1","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00006","to":"bompos:ART-00001:U1"}
+{"kind":"entity","id":"bompos:ART-00001:C12","entity_kind":"BomPosition","label":"C12 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00003","body":"BOM position C12 on article ART-00001. Populated by PM-00008. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:C12","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00008","to":"bompos:ART-00001:C12"}
+{"kind":"entity","id":"bompos:ART-00001:R33","entity_kind":"BomPosition","label":"R33 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00004","body":"BOM position R33 on article ART-00001. Populated by PM-00015. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:R33","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00015","to":"bompos:ART-00001:R33"}
+{"kind":"entity","id":"bompos:ART-00001:U2","entity_kind":"BomPosition","label":"U2 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00005","body":"BOM position U2 on article ART-00001. Populated by PM-00007. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:U2","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00007","to":"bompos:ART-00001:U2"}
+{"kind":"entity","id":"bompos:ART-00001:C5","entity_kind":"BomPosition","label":"C5 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00007","body":"BOM position C5 on article ART-00001. Populated by PM-00002. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:C5","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00002","to":"bompos:ART-00001:C5"}
+{"kind":"entity","id":"bompos:ART-00001:D1","entity_kind":"BomPosition","label":"D1 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00008","body":"BOM position D1 on article ART-00001. Populated by PM-00009. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:D1","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00009","to":"bompos:ART-00001:D1"}
+{"kind":"entity","id":"bompos:ART-00001:K1","entity_kind":"BomPosition","label":"K1 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00009","body":"BOM position K1 on article ART-00001. Populated by PM-00017. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:K1","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00017","to":"bompos:ART-00001:K1"}
+{"kind":"entity","id":"bompos:ART-00001:H1","entity_kind":"BomPosition","label":"H1 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00011","body":"BOM position H1 on article ART-00001. Populated by PM-00011. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:H1","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00011","to":"bompos:ART-00001:H1"}
+{"kind":"entity","id":"bompos:ART-00001:J1","entity_kind":"BomPosition","label":"J1 on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00012","body":"BOM position J1 on article ART-00001. Populated by PM-00010. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:J1","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00010","to":"bompos:ART-00001:J1"}
+{"kind":"entity","id":"bompos:ART-00001:SCR","entity_kind":"BomPosition","label":"SCR on Motor Controller MC-200","manex_table":"bom_node","manex_id":"BN-00013","body":"BOM position SCR on article ART-00001. Populated by PM-00012. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00001:SCR","to":"ART-00001"}
+{"kind":"link","rel":"USED_AT","from":"PM-00012","to":"bompos:ART-00001:SCR"}
+{"kind":"entity","id":"bompos:ART-00002:U1","entity_kind":"BomPosition","label":"U1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00015","body":"BOM position U1 on article ART-00002. Populated by PM-00006. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:U1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00006","to":"bompos:ART-00002:U1"}
+{"kind":"entity","id":"bompos:ART-00002:C1","entity_kind":"BomPosition","label":"C1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00016","body":"BOM position C1 on article ART-00002. Populated by PM-00001. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:C1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00001","to":"bompos:ART-00002:C1"}
+{"kind":"entity","id":"bompos:ART-00002:R1","entity_kind":"BomPosition","label":"R1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00017","body":"BOM position R1 on article ART-00002. Populated by PM-00003. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:R1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00003","to":"bompos:ART-00002:R1"}
+{"kind":"entity","id":"bompos:ART-00002:OC1","entity_kind":"BomPosition","label":"OC1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00018","body":"BOM position OC1 on article ART-00002. Populated by PM-00016. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:OC1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00016","to":"bompos:ART-00002:OC1"}
+{"kind":"entity","id":"bompos:ART-00002:D1","entity_kind":"BomPosition","label":"D1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00020","body":"BOM position D1 on article ART-00002. Populated by PM-00009. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:D1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00009","to":"bompos:ART-00002:D1"}
+{"kind":"entity","id":"bompos:ART-00002:LED","entity_kind":"BomPosition","label":"LED on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00021","body":"BOM position LED on article ART-00002. Populated by PM-00005. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:LED","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00005","to":"bompos:ART-00002:LED"}
+{"kind":"entity","id":"bompos:ART-00002:C2","entity_kind":"BomPosition","label":"C2 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00022","body":"BOM position C2 on article ART-00002. Populated by PM-00001. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:C2","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00001","to":"bompos:ART-00002:C2"}
+{"kind":"entity","id":"bompos:ART-00002:H1","entity_kind":"BomPosition","label":"H1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00024","body":"BOM position H1 on article ART-00002. Populated by PM-00011. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:H1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00011","to":"bompos:ART-00002:H1"}
+{"kind":"entity","id":"bompos:ART-00002:J1","entity_kind":"BomPosition","label":"J1 on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00025","body":"BOM position J1 on article ART-00002. Populated by PM-00010. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:J1","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00010","to":"bompos:ART-00002:J1"}
+{"kind":"entity","id":"bompos:ART-00002:SCR","entity_kind":"BomPosition","label":"SCR on Sensor Unit SU-100","manex_table":"bom_node","manex_id":"BN-00026","body":"BOM position SCR on article ART-00002. Populated by PM-00012. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00002:SCR","to":"ART-00002"}
+{"kind":"link","rel":"USED_AT","from":"PM-00012","to":"bompos:ART-00002:SCR"}
+{"kind":"entity","id":"bompos:ART-00003:U1","entity_kind":"BomPosition","label":"U1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00028","body":"BOM position U1 on article ART-00003. Populated by PM-00007. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:U1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00007","to":"bompos:ART-00003:U1"}
+{"kind":"entity","id":"bompos:ART-00003:C1","entity_kind":"BomPosition","label":"C1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00029","body":"BOM position C1 on article ART-00003. Populated by PM-00002. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:C1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00002","to":"bompos:ART-00003:C1"}
+{"kind":"entity","id":"bompos:ART-00003:D1","entity_kind":"BomPosition","label":"D1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00030","body":"BOM position D1 on article ART-00003. Populated by PM-00009. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:D1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00009","to":"bompos:ART-00003:D1"}
+{"kind":"entity","id":"bompos:ART-00003:F1","entity_kind":"BomPosition","label":"F1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00031","body":"BOM position F1 on article ART-00003. Populated by PM-00018. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:F1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00018","to":"bompos:ART-00003:F1"}
+{"kind":"entity","id":"bompos:ART-00003:K1","entity_kind":"BomPosition","label":"K1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00033","body":"BOM position K1 on article ART-00003. Populated by PM-00017. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:K1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00017","to":"bompos:ART-00003:K1"}
+{"kind":"entity","id":"bompos:ART-00003:K2","entity_kind":"BomPosition","label":"K2 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00034","body":"BOM position K2 on article ART-00003. Populated by PM-00017. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:K2","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00017","to":"bompos:ART-00003:K2"}
+{"kind":"entity","id":"bompos:ART-00003:R1","entity_kind":"BomPosition","label":"R1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00035","body":"BOM position R1 on article ART-00003. Populated by PM-00004. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:R1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00004","to":"bompos:ART-00003:R1"}
+{"kind":"entity","id":"bompos:ART-00003:H1","entity_kind":"BomPosition","label":"H1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00037","body":"BOM position H1 on article ART-00003. Populated by PM-00011. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:H1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00011","to":"bompos:ART-00003:H1"}
+{"kind":"entity","id":"bompos:ART-00003:J1","entity_kind":"BomPosition","label":"J1 on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00038","body":"BOM position J1 on article ART-00003. Populated by PM-00010. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:J1","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00010","to":"bompos:ART-00003:J1"}
+{"kind":"entity","id":"bompos:ART-00003:SCR","entity_kind":"BomPosition","label":"SCR on Power Distribution PD-300","manex_table":"bom_node","manex_id":"BN-00039","body":"BOM position SCR on article ART-00003. Populated by PM-00012. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00003:SCR","to":"ART-00003"}
+{"kind":"link","rel":"USED_AT","from":"PM-00012","to":"bompos:ART-00003:SCR"}
+{"kind":"entity","id":"bompos:ART-00004:U1","entity_kind":"BomPosition","label":"U1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00041","body":"BOM position U1 on article ART-00004. Populated by PM-00006. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:U1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00006","to":"bompos:ART-00004:U1"}
+{"kind":"entity","id":"bompos:ART-00004:C1","entity_kind":"BomPosition","label":"C1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00042","body":"BOM position C1 on article ART-00004. Populated by PM-00001. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:C1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00001","to":"bompos:ART-00004:C1"}
+{"kind":"entity","id":"bompos:ART-00004:R1","entity_kind":"BomPosition","label":"R1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00043","body":"BOM position R1 on article ART-00004. Populated by PM-00003. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:R1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00003","to":"bompos:ART-00004:R1"}
+{"kind":"entity","id":"bompos:ART-00004:PCB","entity_kind":"BomPosition","label":"PCB on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00044","body":"BOM position PCB on article ART-00004. Populated by PM-00014. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:PCB","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00014","to":"bompos:ART-00004:PCB"}
+{"kind":"entity","id":"bompos:ART-00004:OC1","entity_kind":"BomPosition","label":"OC1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00046","body":"BOM position OC1 on article ART-00004. Populated by PM-00016. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:OC1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00016","to":"bompos:ART-00004:OC1"}
+{"kind":"entity","id":"bompos:ART-00004:J1","entity_kind":"BomPosition","label":"J1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00047","body":"BOM position J1 on article ART-00004. Populated by PM-00010. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:J1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00010","to":"bompos:ART-00004:J1"}
+{"kind":"entity","id":"bompos:ART-00004:LED","entity_kind":"BomPosition","label":"LED on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00048","body":"BOM position LED on article ART-00004. Populated by PM-00005. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:LED","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00005","to":"bompos:ART-00004:LED"}
+{"kind":"entity","id":"bompos:ART-00004:H1","entity_kind":"BomPosition","label":"H1 on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00050","body":"BOM position H1 on article ART-00004. Populated by PM-00011. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:H1","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00011","to":"bompos:ART-00004:H1"}
+{"kind":"entity","id":"bompos:ART-00004:SCR","entity_kind":"BomPosition","label":"SCR on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00051","body":"BOM position SCR on article ART-00004. Populated by PM-00012. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:SCR","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00012","to":"bompos:ART-00004:SCR"}
+{"kind":"entity","id":"bompos:ART-00004:TIM","entity_kind":"BomPosition","label":"TIM on Controller Board CB-150","manex_table":"bom_node","manex_id":"BN-00052","body":"BOM position TIM on article ART-00004. Populated by PM-00013. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00004:TIM","to":"ART-00004"}
+{"kind":"link","rel":"USED_AT","from":"PM-00013","to":"bompos:ART-00004:TIM"}
+{"kind":"entity","id":"bompos:ART-00005:U1","entity_kind":"BomPosition","label":"U1 on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00054","body":"BOM position U1 on article ART-00005. Populated by PM-00006. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:U1","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00006","to":"bompos:ART-00005:U1"}
+{"kind":"entity","id":"bompos:ART-00005:C1","entity_kind":"BomPosition","label":"C1 on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00055","body":"BOM position C1 on article ART-00005. Populated by PM-00001. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:C1","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00001","to":"bompos:ART-00005:C1"}
+{"kind":"entity","id":"bompos:ART-00005:R1","entity_kind":"BomPosition","label":"R1 on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00056","body":"BOM position R1 on article ART-00005. Populated by PM-00004. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:R1","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00004","to":"bompos:ART-00005:R1"}
+{"kind":"entity","id":"bompos:ART-00005:DSP","entity_kind":"BomPosition","label":"DSP on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00058","body":"BOM position DSP on article ART-00005. Populated by PM-00019. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:DSP","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00019","to":"bompos:ART-00005:DSP"}
+{"kind":"entity","id":"bompos:ART-00005:KB","entity_kind":"BomPosition","label":"KB on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00059","body":"BOM position KB on article ART-00005. Populated by PM-00020. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:KB","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00020","to":"bompos:ART-00005:KB"}
+{"kind":"entity","id":"bompos:ART-00005:LED","entity_kind":"BomPosition","label":"LED on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00060","body":"BOM position LED on article ART-00005. Populated by PM-00005. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:LED","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00005","to":"bompos:ART-00005:LED"}
+{"kind":"entity","id":"bompos:ART-00005:H1","entity_kind":"BomPosition","label":"H1 on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00062","body":"BOM position H1 on article ART-00005. Populated by PM-00011. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:H1","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00011","to":"bompos:ART-00005:H1"}
+{"kind":"entity","id":"bompos:ART-00005:J1","entity_kind":"BomPosition","label":"J1 on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00063","body":"BOM position J1 on article ART-00005. Populated by PM-00010. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:J1","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00010","to":"bompos:ART-00005:J1"}
+{"kind":"entity","id":"bompos:ART-00005:SCR","entity_kind":"BomPosition","label":"SCR on Gateway Module GM-400","manex_table":"bom_node","manex_id":"BN-00064","body":"BOM position SCR on article ART-00005. Populated by PM-00012. Qty 1."}
+{"kind":"link","rel":"IN_ARTICLE","from":"bompos:ART-00005:SCR","to":"ART-00005"}
+{"kind":"link","rel":"USED_AT","from":"PM-00012","to":"bompos:ART-00005:SCR"}
+{"kind":"entity","id":"defectcode:SOLDER_COLD","entity_kind":"DefectCode","label":"SOLDER_COLD","manex_table":"defect","manex_id":"SOLDER_COLD","body":"In-factory defect code.\n\nObserved 41× across all defects (27.3% of total).\n\nSeverity mix: medium×11, high×17, critical×6, low×7."}
+{"kind":"entity","id":"defectcode:LABEL_MISALIGN","entity_kind":"DefectCode","label":"LABEL_MISALIGN","manex_table":"defect","manex_id":"LABEL_MISALIGN","body":"In-factory defect code.\n\nObserved 22× across all defects (14.7% of total).\n\nSeverity mix: low×17, high×3, medium×2."}
+{"kind":"entity","id":"defectcode:VIB_FAIL","entity_kind":"DefectCode","label":"VIB_FAIL","manex_table":"defect","manex_id":"VIB_FAIL","body":"In-factory defect code.\n\nObserved 20× across all defects (13.3% of total).\n\nSeverity mix: medium×11, high×9."}
+{"kind":"entity","id":"defectcode:VISUAL_CRACK","entity_kind":"DefectCode","label":"VISUAL_CRACK","manex_table":"defect","manex_id":"VISUAL_CRACK","body":"In-factory defect code.\n\nObserved 17× across all defects (11.3% of total).\n\nSeverity mix: medium×10, critical×1, low×3, high×3."}
+{"kind":"entity","id":"defectcode:TEST_OOL","entity_kind":"DefectCode","label":"TEST_OOL","manex_table":"defect","manex_id":"TEST_OOL","body":"In-factory defect code.\n\nObserved 15× across all defects (10.0% of total).\n\nSeverity mix: medium×5, low×5, high×5."}
+{"kind":"entity","id":"defectcode:VISUAL_SCRATCH","entity_kind":"DefectCode","label":"VISUAL_SCRATCH","manex_table":"defect","manex_id":"VISUAL_SCRATCH","body":"In-factory defect code.\n\nObserved 12× across all defects (8.0% of total).\n\nSeverity mix: low×10, medium×2."}
+{"kind":"entity","id":"defectcode:COLD_JOINT","entity_kind":"DefectCode","label":"COLD_JOINT","manex_table":"defect","manex_id":"COLD_JOINT","body":"In-factory defect code.\n\nObserved 5× across all defects (3.3% of total).\n\nSeverity mix: critical×2, high×2, medium×1."}
+{"kind":"entity","id":"defectcode:DIM_OOL","entity_kind":"DefectCode","label":"DIM_OOL","manex_table":"defect","manex_id":"DIM_OOL","body":"In-factory defect code.\n\nObserved 4× across all defects (2.7% of total).\n\nSeverity mix: medium×3, low×1."}
+{"kind":"entity","id":"defectcode:POLARITY","entity_kind":"DefectCode","label":"POLARITY","manex_table":"defect","manex_id":"POLARITY","body":"In-factory defect code.\n\nObserved 3× across all defects (2.0% of total).\n\nSeverity mix: medium×3."}
+{"kind":"entity","id":"defectcode:THERMAL_DRIFT","entity_kind":"DefectCode","label":"THERMAL_DRIFT","manex_table":"defect","manex_id":"THERMAL_DRIFT","body":"In-factory defect code.\n\nObserved 3× across all defects (2.0% of total).\n\nSeverity mix: medium×2, low×1."}
+{"kind":"entity","id":"defectcode:MISSING_PART","entity_kind":"DefectCode","label":"MISSING_PART","manex_table":"defect","manex_id":"MISSING_PART","body":"In-factory defect code.\n\nObserved 3× across all defects (2.0% of total).\n\nSeverity mix: low×1, high×1, critical×1."}
+{"kind":"entity","id":"defectcode:HAIRLINE","entity_kind":"DefectCode","label":"HAIRLINE","manex_table":"defect","manex_id":"HAIRLINE","body":"In-factory defect code.\n\nObserved 2× across all defects (1.3% of total).\n\nSeverity mix: low×1, medium×1."}
+{"kind":"entity","id":"defectcode:BURNED","entity_kind":"DefectCode","label":"BURNED","manex_table":"defect","manex_id":"BURNED","body":"In-factory defect code.\n\nObserved 2× across all defects (1.3% of total).\n\nSeverity mix: medium×2."}
+{"kind":"entity","id":"defectcode:FUNC_FAIL","entity_kind":"DefectCode","label":"FUNC_FAIL","manex_table":"defect","manex_id":"FUNC_FAIL","body":"In-factory defect code.\n\nObserved 1× across all defects (0.7% of total).\n\nSeverity mix: critical×1."}
+{"kind":"entity","id":"testcode:ESR-Messung Kondensator","entity_kind":"TestCode","label":"ESR-Messung Kondensator","manex_table":"test","manex_id":"TST-00001","body":"ESR-Messung Kondensator\n\nType: electrical.\n\nLimits: [0, 0.5]."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:ESR-Messung Kondensator","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Vibrationstest","entity_kind":"TestCode","label":"Vibrationstest","manex_table":"test","manex_id":"TST-00002","body":"Vibrationstest\n\nType: mechanical.\n\nLimits: [0, 3.5]."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Vibrationstest","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Thermische Kurzpruefung","entity_kind":"TestCode","label":"Thermische Kurzpruefung","manex_table":"test","manex_id":"TST-00003","body":"Thermische Kurzpruefung\n\nType: thermal.\n\nLimits: [20, 85]."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Thermische Kurzpruefung","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Funktionstest EOL","entity_kind":"TestCode","label":"Funktionstest EOL","manex_table":"test","manex_id":"TST-00004","body":"Funktionstest EOL\n\nType: functional."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Funktionstest EOL","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Sichtpruefung","entity_kind":"TestCode","label":"Sichtpruefung","manex_table":"test","manex_id":"TST-00005","body":"Sichtpruefung\n\nType: visual."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Sichtpruefung","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Dimensionspruefung","entity_kind":"TestCode","label":"Dimensionspruefung","manex_table":"test","manex_id":"TST-00006","body":"Dimensionspruefung\n\nType: mechanical.\n\nLimits: [0, 1]."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Dimensionspruefung","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Elektrische Basismessung","entity_kind":"TestCode","label":"Elektrische Basismessung","manex_table":"test","manex_id":"TST-00007","body":"Elektrische Basismessung\n\nType: electrical.\n\nLimits: [4.8, 5.2]."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Elektrische Basismessung","to":"SEC-00002"}
+{"kind":"entity","id":"testcode:Label + SN Kontrolle","entity_kind":"TestCode","label":"Label + SN Kontrolle","manex_table":"test","manex_id":"TST-00008","body":"Label + SN Kontrolle\n\nType: visual."}
+{"kind":"link","rel":"BELONGS_TO","from":"testcode:Label + SN Kontrolle","to":"SEC-00003"}
+{"kind":"concept","id":"detection-bias","title":"Detection bias (end-of-line gate effect)","body":"A station that sits at the end of the line will *detect* the majority of defects regardless of where they originate. High defect counts at a gate section are not a root-cause signal. Always check `occurrence_section_id`, not `detected_section_id`, when reasoning about cause."}
+{"kind":"concept","id":"pareto-heuristic","title":"Pareto — 80/20 for defect codes","body":"A small number of defect codes usually account for the majority of events. Focus root-cause effort on the top bars first; the tail is long but cheap to ignore until the head is fixed."}
+{"kind":"concept","id":"near-miss-leading-indicator","title":"Near-miss test results as leading indicator","body":"Test results whose value lands close to (but inside) the spec limit are not failures, but they are the leading edge of a drift. Surfacing them early makes preventive actions possible before a true FAIL materializes."}
+{"kind":"observation","id":"OBS-STATS-PARETO","text":"Across 150 in-factory defects, the top three codes (SOLDER_COLD, LABEL_MISALIGN, VIB_FAIL) account for 55% of events. Investigation effort should prioritize these first.","confidence":1,"first_seen":"2026-04-18T16:56:38.047Z","about_entities":["defectcode:SOLDER_COLD","defectcode:LABEL_MISALIGN","defectcode:VIB_FAIL"],"about_concepts":["pareto-heuristic"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-BOM-ART-00001","text":"Motor Controller MC-200 (ART-00001) has 10 populated BOM positions. When drafting an FMEA, iterate each position — the dominant failure modes typically cluster at a small subset of them.","confidence":1,"first_seen":"2026-04-18T16:56:38.147Z","about_entities":["ART-00001"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-BOM-ART-00002","text":"Sensor Unit SU-100 (ART-00002) has 10 populated BOM positions. When drafting an FMEA, iterate each position — the dominant failure modes typically cluster at a small subset of them.","confidence":1,"first_seen":"2026-04-18T16:56:38.189Z","about_entities":["ART-00002"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-BOM-ART-00003","text":"Power Distribution PD-300 (ART-00003) has 10 populated BOM positions. When drafting an FMEA, iterate each position — the dominant failure modes typically cluster at a small subset of them.","confidence":1,"first_seen":"2026-04-18T16:56:38.226Z","about_entities":["ART-00003"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-BOM-ART-00004","text":"Controller Board CB-150 (ART-00004) has 10 populated BOM positions. When drafting an FMEA, iterate each position — the dominant failure modes typically cluster at a small subset of them.","confidence":1,"first_seen":"2026-04-18T16:56:38.257Z","about_entities":["ART-00004"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-BOM-ART-00005","text":"Gateway Module GM-400 (ART-00005) has 9 populated BOM positions. When drafting an FMEA, iterate each position — the dominant failure modes typically cluster at a small subset of them.","confidence":1,"first_seen":"2026-04-18T16:56:38.293Z","about_entities":["ART-00005"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"observation","id":"OBS-DETECTION-BIAS-PRUEFUNG","text":"End-of-line 'Pruefung' sections gate virtually every product leaving the line. They therefore detect the majority of defects regardless of origin. When a Pruefung section appears as the top occurrence in a count, treat that as detection bias rather than a causal signal.","confidence":1,"first_seen":"2026-04-18T16:56:38.349Z","about_concepts":["detection-bias"],"evidenced_by":"SRC-DATA-PATTERNS"}
+{"kind":"log","id":"LOG-1776531398392-683","ts":"2026-04-18T16:56:38.392Z","action":"ingest_sql","summary":"Pulled structural entities from Manex: Factories:2, Lines:4, Sections:12, Articles:5, Parts:20, Batches:22, BomPositions:49, DefectCodes:14, TestCodes:8."}

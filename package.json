@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "wiki:seed": "tsx scripts/seed-wiki.ts"
+    "wiki:seed": "tsx scripts/seed-wiki.ts",
+    "wiki:ingest": "tsx scripts/ingest-manex.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
+    "@dagrejs/dagre": "^3.0.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/supabase-js": "^2.103.3",
     "@xyflow/react": "^12.10.2",

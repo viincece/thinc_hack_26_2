@@ -26,6 +26,8 @@ export const KIND_META: Record<
   Batch: { icon: Boxes, color: "text-amber-700", bg: "bg-amber-50", ring: "ring-amber-200", label: "Batch" },
   Article: { icon: Package, color: "text-indigo-700", bg: "bg-indigo-50", ring: "ring-indigo-200", label: "Article" },
   Section: { icon: HardHat, color: "text-teal-700", bg: "bg-teal-50", ring: "ring-teal-200", label: "Section" },
+  Line: { icon: HardHat, color: "text-sky-800", bg: "bg-sky-50", ring: "ring-sky-200", label: "Line" },
+  Factory: { icon: Factory, color: "text-stone-700", bg: "bg-stone-50", ring: "ring-stone-200", label: "Factory" },
   Operator: { icon: Users, color: "text-pink-700", bg: "bg-pink-50", ring: "ring-pink-200", label: "Operator" },
   BomPosition: { icon: Puzzle, color: "text-cyan-700", bg: "bg-cyan-50", ring: "ring-cyan-200", label: "BOM pos" },
   DefectCode: { icon: ClipboardList, color: "text-rose-700", bg: "bg-rose-50", ring: "ring-rose-200", label: "Defect" },
