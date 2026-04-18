@@ -1,6 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { safeSelect, SqlGuardError } from "@/lib/db";
 import { manex, type DefectDetail } from "@/lib/manex";
+import { KG_TOOLS, runKgTool } from "@/lib/kg/tools";
 
 /* -------------------------------------------------------------- *
  *  Tool schemas (sent to Claude)
@@ -116,6 +117,7 @@ export const TOOLS: Anthropic.Tool[] = [
       required: ["product_id", "action_type", "owner_user_id", "title", "details"],
     },
   },
+  ...KG_TOOLS,
   {
     name: "update_report_section",
     description:
@@ -163,6 +165,12 @@ export async function runTool(
   input: ToolInput,
 ): Promise<ToolResult> {
   try {
+    if (name.startsWith("kg_")) {
+      const r = await runKgTool(name, input);
+      return r.ok
+        ? { ok: true, data: r.data }
+        : { ok: false, error: r.error };
+    }
     switch (name) {
       case "sql_query":
         return await toolSqlQuery(input);

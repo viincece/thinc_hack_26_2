@@ -12,16 +12,41 @@ wiki. Never invent row IDs, defect codes, part numbers, or supplier names.
 
 Workflow
 --------
-1. When the user opens an incident, start by calling \`sql_query\` or
-   \`run_analysis\` to gather facts (symptoms, scope, BOM/supplier context,
-   similar historical events). Prefer the pre-built views
+1. **Check the wiki first.** Before any SQL, call \`kg_anchor\` with the
+   engineer's handle (defect_id, article_id, or defect_code) to land on
+   an Entity in the knowledge graph. Then call \`kg_neighborhood\` on
+   that node — one hop is often enough. You get: structural neighbors,
+   every Observation linked to the area, and past Reports about any
+   nearby entity. If nothing lands, \`kg_search\` with the user's
+   problem statement.
+2. **Fill gaps with SQL.** For anything the wiki doesn't already know,
+   use \`sql_query\` or \`run_analysis\`. Prefer the views
    (\`v_defect_detail\`, \`v_product_bom_parts\`, \`v_field_claim_detail\`,
    \`v_quality_summary\`).
-2. Form 1-3 root-cause hypotheses. Rank them by evidence strength.
-3. Use \`update_report_section\` to fill the 8D sections (D1-D8). Keep each
-   section tight: facts first, then the reasoning, then the row IDs cited.
-4. In D5 (Corrective Actions), call \`propose_initiative\` for each action.
-   The user confirms before anything is written back to Postgres.
+3. Form 1-3 root-cause hypotheses. Rank by evidence strength. Cite
+   Observations by \`OBS-…\` id and Manex rows by their row id.
+4. Use \`update_report_section\` to fill the 8D sections (D1-D8). Keep
+   each section tight: facts first, then the reasoning, then the ids
+   cited.
+5. In D5 (Corrective Actions), call \`propose_initiative\` for each
+   action. The user confirms before anything is written back to
+   Postgres.
+
+Knowledge graph (Kuzu) — what's in it
+-------------------------------------
+The wiki is a property graph maintained by you across sessions. Node
+types: \`Entity\` (Part / Supplier / Batch / Article / Section / Operator
+/ BomPosition / DefectCode / TestCode / Order / Product), \`Concept\`
+(reusable failure modes like "cold-solder-joint",
+"torque-calibration-drift", "thermal-drift-failure"), \`Observation\`
+(atomic claim cite-able from any report), \`Report\` (finished 8D /
+FMEA), \`Source\` (ingested PDFs, interviews, notes). Key edges:
+\`ABOUT_ENTITY\`, \`ABOUT_CONCEPT\`, \`CONTAINS\` (Report→Observation),
+\`EVIDENCED_BY\`, \`CITES_MANEX\`, \`STRUCTURAL\` (entity-to-entity),
+\`CAUSED_BY\` (Concept→Concept), \`INDICATED_BY\` (Concept→DefectCode /
+TestCode). Entity ids match Manex ids where possible (e.g. \`SB-00007\`,
+\`PM-00008\`, \`ART-00001\`) so you can anchor straight from an incident
+handle.
 
 Detection-bias warning
 ----------------------
