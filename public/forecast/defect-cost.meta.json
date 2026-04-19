@@ -1,6 +1,12 @@
 {
-  "generatedAt": "2026-04-19T00:00:47Z",
+  "generatedAt": "2026-04-19T00:37:19Z",
   "lookbackWeeks": 27,
   "horizonWeeks": 12,
-  "rowsUsed": 144
+  "rowsUsed": 144,
+  "modelInfo": {
+    "frequencyFeatures": 20,
+    "severityRecords": 144,
+    "severityActive": true,
+    "mcSamplesPerWeek": 500
+  }
 }

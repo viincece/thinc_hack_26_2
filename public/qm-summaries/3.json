@@ -1,0 +1,67 @@
+{
+  "reportId": 3,
+  "summaryShort": "Line 3: broken lens component reported as a minor issue.",
+  "summaryLong": "A worker on **Line 3** reported a broken lens component, describing it as only a small issue. No stop-the-bleed action was mentioned. The defect appears to be a structural/mechanical break with low severity.",
+  "facts": {
+    "factory": {
+      "value": null,
+      "status": "missing"
+    },
+    "line": {
+      "value": "Linie 3",
+      "status": "grounded",
+      "source": "Line 3 ist kaputt"
+    },
+    "section": {
+      "value": null,
+      "status": "missing"
+    },
+    "article": {
+      "value": null,
+      "status": "missing"
+    },
+    "part": {
+      "value": "Linse",
+      "status": "grounded",
+      "source": "so ein Teil für so eine Linse, das ist gebrochen"
+    },
+    "defect_code": {
+      "value": "BROKEN_PART",
+      "status": "grounded",
+      "source": "das ist gebrochen"
+    },
+    "severity": {
+      "value": "low",
+      "status": "grounded",
+      "source": "ist aber nur ein kleiner Issue"
+    },
+    "quantity": {
+      "value": null,
+      "status": "missing"
+    },
+    "product_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "order_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "caller_role": {
+      "value": null,
+      "status": "missing"
+    },
+    "keywords": {
+      "value": [
+        "Linse",
+        "gebrochen",
+        "kleiner Issue",
+        "Line 3"
+      ],
+      "status": "grounded",
+      "source": "Line 3 ist kaputt ... Teil für so eine Linse, das ist gebrochen ... nur ein kleiner Issue"
+    }
+  },
+  "generatedAt": "2026-04-19T00:24:25.055Z",
+  "modelVersion": "claude-opus-4-6"
+}

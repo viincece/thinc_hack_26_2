@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, AlertTriangle, Boxes, Factory } from "lucide-react";
+import { ArrowRight, AlertTriangle, Boxes, Factory, Radio } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,6 +19,8 @@ import {
   type ForecastPayload,
   type TrendBucket,
 } from "@/components/dashboard/defect-trend-chart";
+import { VoiceReportsCard } from "@/components/dashboard/voice-reports-card";
+import { listQmReports } from "@/lib/qm-reports/manex";
 
 /**
  * Maximum age of the forecast JSON before we treat it as stale and hide
@@ -203,40 +205,39 @@ async function getCounts() {
 }
 
 export default async function Home() {
-  const [pareto, defects, counts, trend, forecast] = await Promise.all([
-    getPareto(),
-    getRecentDefects(),
-    getCounts(),
-    getWeeklyTrend(),
-    getForecast(),
-  ]);
+  const [pareto, defects, counts, trend, forecast, voiceReports] =
+    await Promise.all([
+      getPareto(),
+      getRecentDefects(),
+      getCounts(),
+      getWeeklyTrend(),
+      getForecast(),
+      listQmReports({ limit: 5 }),
+    ]);
 
   const apiOk = pareto.total > 0 || defects.length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
-      <div className="flex items-start justify-between gap-6">
-        <div className="max-w-2xl">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-sage-cream px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-olive ring-1 ring-inset ring-sage-border">
+    <div className="mx-auto max-w-7xl space-y-3 px-6 py-5">
+      {/* Hero — single dense row */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-cream px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-olive ring-1 ring-inset ring-sage-border">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600" />
-            Live shopfloor feed
-          </div>
-          <h1 className="text-3xl font-extrabold leading-[1.15] tracking-tight text-deep-olive">
-            Quality signals across the shop floor.
+            Live
+          </span>
+          <h1 className="truncate text-xl font-extrabold leading-none tracking-tight text-deep-olive">
+            Quality signals across the shop floor
           </h1>
-          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted-olive">
-            Pulled live from the Manex API — defects, claims, and initiatives,
-            so you can spot the pattern before you close the ticket.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" size="sm">
             <Link href="/incidents">
               Browse incidents <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <NewAnalysisButton variant="outline" />
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/report/new">New 8D report</Link>
           </Button>
         </div>
@@ -256,76 +257,66 @@ export default async function Home() {
         </Card>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* KPI strip — 4-up on md, compact */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
-          icon={<AlertTriangle className="h-4 w-4" />}
+          icon={<AlertTriangle className="h-3.5 w-3.5" />}
           label="Defect codes"
           value={pareto.buckets.length.toString()}
           hint={`${pareto.total} defects total`}
         />
         <StatCard
-          icon={<Factory className="h-4 w-4" />}
-          label="Open field claims"
+          icon={<Factory className="h-3.5 w-3.5" />}
+          label="Field claims"
           value={counts.claims > 0 ? "tracking" : "—"}
-          hint="Source: /field_claim"
+          hint="/field_claim"
         />
         <StatCard
-          icon={<Boxes className="h-4 w-4" />}
+          icon={<Boxes className="h-3.5 w-3.5" />}
           label="Initiatives"
           value={counts.actions > 0 ? "active" : "—"}
-          hint="Source: /product_action"
+          hint="/product_action"
+        />
+        <StatCard
+          icon={<Radio className="h-3.5 w-3.5" />}
+          label="Voice reports"
+          value={voiceReports.length.toString()}
+          hint="last 24 h"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Defect Pareto</CardTitle>
-            <CardDescription>
-              80/20 view across all in-factory defects. Detection-bias warning:
-              the &quot;Pruefung Linie 2&quot; section gates most defects — a
-              big bar here is not a root cause.
+      {/* Live feeds — voice reports + recent defects side-by-side */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <VoiceReportsCard initialItems={voiceReports} />
+
+        <Card className="flex h-full flex-col">
+          <CardHeader className="px-3 pb-2 pt-3">
+            <CardTitle className="text-sm">Recent defects</CardTitle>
+            <CardDescription className="text-[11px] leading-tight">
+              Latest 5 defects on the shop floor.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {pareto.buckets.length ? (
-              <ParetoChart buckets={pareto.buckets} />
-            ) : (
-              <Empty>No defect data.</Empty>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent defects</CardTitle>
-            <CardDescription>Latest 5 defects on the shop floor.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 space-y-1 px-2 pb-2 pt-0">
             {defects.length ? (
               defects.map((d) => (
                 <Link
                   key={d.defect_id}
                   href={`/incidents/${d.defect_id}`}
-                  className="flex items-start justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                  className="flex items-center gap-2 rounded-md border border-sage-border/70 bg-white/60 px-2 py-1 text-[12px] hover:border-light-border hover:bg-white"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{d.defect_code}</span>
-                      <Badge variant={severityVariant(d.severity)}>
-                        {d.severity}
-                      </Badge>
-                    </div>
-                    <div className="truncate text-xs text-zinc-500">
-                      {d.product_id}
-                      {d.reported_part_number
-                        ? ` · ${d.reported_part_number}`
-                        : ""}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-xs text-zinc-500">
-                    {d.ts ? new Date(d.ts).toISOString().slice(0, 10) : ""}
-                  </div>
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {d.defect_code}
+                  </span>
+                  <Badge variant={severityVariant(d.severity)}>
+                    {d.severity}
+                  </Badge>
+                  <span className="shrink-0 truncate text-[10px] text-muted-olive">
+                    {d.product_id}
+                    {d.reported_part_number ? ` · ${d.reported_part_number}` : ""}
+                  </span>
+                  <span className="shrink-0 text-[10px] tabular-nums text-muted-olive">
+                    {dateOnly(d)}
+                  </span>
                 </Link>
               ))
             ) : (
@@ -335,23 +326,43 @@ export default async function Home() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Defects &amp; cost — last 6 months</CardTitle>
-          <CardDescription>
-            Weekly defect count (
-            <span className="font-semibold text-[color:#2563eb]">blue</span>)
-            against inflicted cost in € (
-            <span className="font-semibold text-[color:#eab308]">yellow</span>).
-            {forecast
-              ? " Dashed lines are a TabPFN forecast for the next 12 weeks."
-              : " Missing weeks are filled with zero."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DefectTrendChart data={trend} forecast={forecast} />
-        </CardContent>
-      </Card>
+      {/* Analytics — trend + Pareto side-by-side */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+          <CardHeader className="px-4 pb-2 pt-3">
+            <CardTitle className="text-sm">
+              Defects &amp; cost — last 6 months
+            </CardTitle>
+            <CardDescription className="text-[11px] leading-tight">
+              Weekly defects (
+              <span className="font-semibold text-[color:#2563eb]">blue</span>)
+              vs. cost €{" "}
+              <span className="font-semibold text-[color:#eab308]">yellow</span>
+              {forecast ? " · dashed = 12-week TabPFN forecast" : ""}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-0">
+            <DefectTrendChart data={trend} forecast={forecast} />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader className="px-4 pb-2 pt-3">
+            <CardTitle className="text-sm">Defect Pareto</CardTitle>
+            <CardDescription className="text-[11px] leading-tight">
+              80/20 across all defects. Detection-bias: a tall &quot;Pruefung
+              Linie 2&quot; bar is not a root cause.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-0">
+            {pareto.buckets.length ? (
+              <ParetoChart buckets={pareto.buckets} />
+            ) : (
+              <Empty>No defect data.</Empty>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -369,24 +380,32 @@ function StatCard({
 }) {
   return (
     <Card className="transition-colors hover:border-light-border">
-      <CardContent className="flex items-center justify-between pt-5">
+      <CardContent className="flex items-center justify-between px-3 py-2">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-olive">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive">
             {label}
           </div>
-          <div className="mt-1 font-sans text-3xl font-extrabold leading-none text-deep-olive">
+          <div className="mt-0.5 font-sans text-2xl font-extrabold leading-none text-deep-olive">
             {value}
           </div>
           {hint ? (
-            <div className="mt-1.5 text-xs text-muted-olive">{hint}</div>
+            <div className="mt-0.5 text-[10px] text-muted-olive">{hint}</div>
           ) : null}
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sage-cream text-olive-ink ring-1 ring-inset ring-sage-border">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-sage-cream text-olive-ink ring-1 ring-inset ring-sage-border">
           {icon}
         </div>
       </CardContent>
     </Card>
   );
+}
+
+function dateOnly(d: DefectDetail): string {
+  // The view exposes the defect timestamp as `defect_ts`; the flat
+  // `defect` table uses `ts`. Accept either via a loose record cast.
+  const anyD = d as unknown as Record<string, string | undefined>;
+  const when = anyD.defect_ts ?? anyD.ts;
+  return when ? new Date(when).toISOString().slice(0, 10) : "";
 }
 
 function Empty({ children }: { children: React.ReactNode }) {

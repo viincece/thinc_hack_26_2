@@ -26,7 +26,7 @@ export function ParetoChart({ buckets }: { buckets: Bucket[] }) {
     cumPct: Math.round(b.cumShare * 1000) / 10,
   }));
   return (
-    <div className="h-80 w-full">
+    <div className="h-56 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}

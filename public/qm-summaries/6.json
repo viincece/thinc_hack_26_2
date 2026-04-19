@@ -1,0 +1,70 @@
+{
+  "reportId": 6,
+  "summaryShort": "Critical solder defect on PowerCore 500 at Line 2, Station 2 — worker reports very poor quality.",
+  "summaryLong": "A worker at **Montage Linie 2, Station 2** reported a severe soldering defect on the **PowerCore 500**. The solder joints are described as looking like \"der letzte Müll\" (total garbage), indicating a critical quality issue. The worker expressed frustration that this is a recurring problem that has not been addressed despite prior reports. No immediate containment action was mentioned.",
+  "facts": {
+    "factory": {
+      "value": null,
+      "status": "missing"
+    },
+    "line": {
+      "value": "Montage Linie 2",
+      "status": "grounded",
+      "source": "An der Linie 2"
+    },
+    "section": {
+      "value": "Station 2",
+      "status": "grounded",
+      "source": "Station 2"
+    },
+    "article": {
+      "value": "PowerCore 500",
+      "status": "grounded",
+      "source": "die 500H ... mit dem Produkt PowerCore 500"
+    },
+    "part": {
+      "value": null,
+      "status": "missing"
+    },
+    "defect_code": {
+      "value": "SOLDER_COLD",
+      "status": "grounded",
+      "source": "komplette Scheiße beim Zusammenlösen ... das Zusammenlöten fehlerhaft"
+    },
+    "severity": {
+      "value": "critical",
+      "status": "grounded",
+      "source": "das sieht aus wie der letzte Müll"
+    },
+    "quantity": {
+      "value": null,
+      "status": "missing"
+    },
+    "product_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "order_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "caller_role": {
+      "value": "Werker",
+      "status": "suggested"
+    },
+    "keywords": {
+      "value": [
+        "Löten",
+        "Lötfehler",
+        "PowerCore 500",
+        "Station 2",
+        "Linie 2",
+        "wiederkehrend"
+      ],
+      "status": "grounded",
+      "source": "Zusammenlösen ... das ändert sich aber nicht"
+    }
+  },
+  "generatedAt": "2026-04-19T00:43:22.360Z",
+  "modelVersion": "claude-opus-4-6"
+}

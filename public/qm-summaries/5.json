@@ -1,0 +1,68 @@
+{
+  "reportId": 5,
+  "summaryShort": "Low-severity solder defect on ECU Alpha at SMT line 2; no corrective action taken yet.",
+  "summaryLong": "A solder defect was reported on the **Steuerplatine ECU Alpha** produced on **SMT-Bestückungslinie 2**. The defect is classified as a **functional error** with low severity — production is not stopped. The caller suspects the foreman as the root cause and notes the issue should be monitored to prevent recurrence. **No immediate corrective action** has been taken so far.",
+  "facts": {
+    "factory": {
+      "value": null,
+      "status": "missing"
+    },
+    "line": {
+      "value": "SMT-Bestückungslinie 2",
+      "status": "grounded",
+      "source": "Verstanden, SMT-Bestückungslinie 2."
+    },
+    "section": {
+      "value": null,
+      "status": "missing"
+    },
+    "article": {
+      "value": "Steuerplatine ECU Alpha",
+      "status": "grounded",
+      "source": "Alles klar, Steuerplatine ECU Alpha."
+    },
+    "part": {
+      "value": null,
+      "status": "missing"
+    },
+    "defect_code": {
+      "value": "SOLDER_DEFECT",
+      "status": "grounded",
+      "source": "Es gab einen Lötfehler."
+    },
+    "severity": {
+      "value": "low",
+      "status": "grounded",
+      "source": "Es ist eher ein kleines Thema."
+    },
+    "quantity": {
+      "value": null,
+      "status": "missing"
+    },
+    "product_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "order_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "caller_role": {
+      "value": null,
+      "status": "missing"
+    },
+    "keywords": {
+      "value": [
+        "Lötfehler",
+        "funktionaler Fehler",
+        "Vorarbeiter",
+        "ECU Alpha",
+        "SMT-Bestückungslinie 2"
+      ],
+      "status": "grounded",
+      "source": "Es gab einen Lötfehler. Ein funktionaler Fehler. Der Vorarbeiter hat scheiße gesaut."
+    }
+  },
+  "generatedAt": "2026-04-19T00:30:50.595Z",
+  "modelVersion": "claude-opus-4-6"
+}

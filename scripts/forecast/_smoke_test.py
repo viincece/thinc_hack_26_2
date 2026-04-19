@@ -1,22 +1,25 @@
 """
-Smoke test for the data pipeline only — fetch + ISO-week bucketing.
-Skips the TabPFN call so it can run without tabpfn-client installed.
+Smoke test for the data pipeline — fetch + bucket + feature assembly.
+Skips the TabPFN calls so it runs without tabpfn-client installed.
 
 Run:
     python scripts/forecast/_smoke_test.py
 """
 from datetime import datetime, timedelta, timezone
+import os
 import sys
 
-# Import from the sibling module.
-sys.path.insert(0, __file__.rsplit("/", 1)[0].rsplit("\\", 1)[0])
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from forecast import (  # type: ignore
     ENV_LOCAL,
     LOOKBACK_DAYS,
+    WEEKLY_FEATURE_NAMES,
+    _get_holiday_set,
+    _records_with_week,
     bucket_weeks,
-    build_future_matrix,
-    build_training_matrix,
+    build_severity_matrix,
+    build_weekly_feature_matrix,
     fetch_defect_rows,
     load_env,
 )
@@ -34,19 +37,32 @@ def main() -> None:
         days=LOOKBACK_DAYS
     )
     rows = fetch_defect_rows(api_url, api_key, since.date().isoformat())
-    weeks = bucket_weeks(rows, since)
-    X, y_def, y_cost, origin = build_training_matrix(weeks)
-    X_future, future_rows = build_future_matrix(weeks[-1]["weekStart"], origin, 12)
+    records = _records_with_week(rows)
+    weeks = bucket_weeks(records, since)
+    origin = weeks[0]["_monday"]
+    holiday_weeks = _get_holiday_set(weeks)
 
-    print(f"rows fetched:    {len(rows)}")
-    print(f"weekly buckets:  {len(weeks)}")
-    print(f"non-empty weeks: {sum(1 for w in weeks if w['defects'] or w['costEur'])}")
-    print(f"X train shape:   {X.shape}")
-    print(f"y_def head:      {y_def[:6].tolist()}")
-    print(f"y_cost head:     {y_cost[:6].tolist()}")
-    print(f"X_future shape:  {X_future.shape}")
-    print(f"future first:    {future_rows[0]}")
-    print(f"future last:     {future_rows[-1]}")
+    X, y_def, y_cost = build_weekly_feature_matrix(weeks, origin, holiday_weeks)
+    X_sev, y_sev, cat_idx, vocabs = build_severity_matrix(records)
+
+    print(f"rows fetched:        {len(rows)}")
+    print(f"records kept:        {len(records)}")
+    print(f"weekly buckets:      {len(weeks)}")
+    print(f"non-empty weeks:     {sum(1 for w in weeks if w['defects'] > 0)}")
+    print(f"holiday weeks seen:  {sorted(holiday_weeks)[:6]}...")
+    print(f"weekly X shape:      {X.shape}   (features: {len(WEEKLY_FEATURE_NAMES)})")
+    print(f"y_def head:          {y_def[:6].tolist()}")
+    print(f"y_cost head:         {y_cost[:6].tolist()}")
+    print()
+    print(f"severity X shape:    {X_sev.shape}")
+    print(f"severity cat cols:   {cat_idx}")
+    print(f"severity cat vocab sizes: {[len(v) for v in vocabs]}")
+    print(f"severity y head:     {y_sev[:6].tolist()}")
+    print()
+    print("Sample weekly features (last week):")
+    last = X[-1]
+    for name, val in zip(WEEKLY_FEATURE_NAMES, last):
+        print(f"  {name:32s} {val:.3f}")
 
 
 if __name__ == "__main__":

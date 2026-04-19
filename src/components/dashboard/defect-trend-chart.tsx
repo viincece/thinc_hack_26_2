@@ -128,7 +128,7 @@ export function DefectTrendChart({
 
   return (
     <div>
-      <div className="h-72 w-full">
+      <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={rows}

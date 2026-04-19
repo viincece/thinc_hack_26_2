@@ -1,0 +1,69 @@
+{
+  "reportId": 1,
+  "summaryShort": "Critical solder defect on PowerCore 500 at Line 2, Station 3 — all output affected, no action taken yet.",
+  "summaryLong": "A worker reported a **critical cold-solder defect** on the PowerCore 500 at Montage Linie 2, Station 3. All products coming off the station are reportedly defective. The caller has **not yet taken any corrective action** and left immediately, so stop-the-bleed measures are still outstanding.",
+  "facts": {
+    "factory": {
+      "value": null,
+      "status": "missing"
+    },
+    "line": {
+      "value": "Montage Linie 2",
+      "status": "grounded",
+      "source": "Linie 2"
+    },
+    "section": {
+      "value": "Station 3",
+      "status": "grounded",
+      "source": "Station 3"
+    },
+    "article": {
+      "value": "PowerCore 500",
+      "status": "grounded",
+      "source": "die 500er"
+    },
+    "part": {
+      "value": null,
+      "status": "missing"
+    },
+    "defect_code": {
+      "value": "SOLDER_COLD",
+      "status": "grounded",
+      "source": "die 500er wird scheiße gelötet"
+    },
+    "severity": {
+      "value": "critical",
+      "status": "grounded",
+      "source": "Es ist ein fataler Fehler"
+    },
+    "quantity": {
+      "value": null,
+      "status": "missing"
+    },
+    "product_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "order_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "caller_role": {
+      "value": null,
+      "status": "missing"
+    },
+    "keywords": {
+      "value": [
+        "Löten",
+        "fataler Fehler",
+        "kalt gelötet",
+        "alle Produkte betroffen",
+        "keine Maßnahme"
+      ],
+      "status": "grounded",
+      "source": "die 500er wird scheiße gelötet. Es ist ein fataler Fehler. alle Produkte, die da rauskommen, sind zündig. Ich habe noch nichts übernommen."
+    }
+  },
+  "generatedAt": "2026-04-19T00:24:23.890Z",
+  "modelVersion": "claude-opus-4-6"
+}
