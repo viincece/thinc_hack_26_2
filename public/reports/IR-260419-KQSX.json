@@ -1,0 +1,362 @@
+{
+  "id": "IR-260419-KQSX",
+  "name": "LED 5mm rot — incident analysis",
+  "generatedAt": "2026-04-19T09:02:17.209Z",
+  "source": {
+    "draftId": "8D-260418-V74C",
+    "draftName": "LED 5mm rot",
+    "defect_id": "DEF-00098"
+  },
+  "facts": {
+    "defect_id": "DEF-00098",
+    "defect_code": "MISSING_PART",
+    "severity": "high",
+    "article_id": "ART-00005",
+    "article_name": "Gateway Module GM-400",
+    "product_id": "PRD-00461",
+    "reported_part_number": "PM-00005",
+    "reported_part_title": "LED 5mm rot",
+    "occurrence_section_name": "Montage Linie 2",
+    "detected_section_name": "Montage Linie 1",
+    "cost_eur": 148.94,
+    "ts": "2026-03-26T14:52:50.953436+00:00",
+    "notes": "Unit wont power on. Fuse blown immediately.",
+    "rework_text": "Re-solder the dc jack, the joints look dry. Test for continuity.",
+    "rework_user": "user_089",
+    "similar_count": 1,
+    "field_claims_count": 0
+  },
+  "risk": {
+    "value": 71,
+    "band": "high",
+    "rationale": [
+      "Severity high → base 60",
+      "1 similar defects in last 12 wk → ×1.18"
+    ]
+  },
+  "cost": {
+    "defectCostEur": 148.94,
+    "reworkCostEur": 57.96,
+    "claimCostEur": 0,
+    "totalEur": 206.9,
+    "rationale": [
+      "Defect cost € 148.94",
+      "Rework labour € 57.96"
+    ]
+  },
+  "faultTree": {
+    "id": "root",
+    "kind": "defect",
+    "label": "MISSING_PART on Gateway Module GM-400",
+    "detail": "Unit wont power on. Fuse blown immediately.",
+    "children": [
+      {
+        "id": "cat_Material",
+        "kind": "category",
+        "label": "Material",
+        "children": [
+          {
+            "id": "part_PM-00005",
+            "kind": "concept",
+            "label": "Part PM-00005",
+            "detail": "LED 5mm rot",
+            "confidence": "high"
+          }
+        ]
+      },
+      {
+        "id": "cat_Machine",
+        "kind": "category",
+        "label": "Machine",
+        "children": [
+          {
+            "id": "machine_section",
+            "kind": "concept",
+            "label": "Produced at Montage Linie 2",
+            "detail": "occurrence_section_id",
+            "confidence": "high"
+          }
+        ]
+      },
+      {
+        "id": "cat_Method",
+        "kind": "category",
+        "label": "Method",
+        "children": [
+          {
+            "id": "method_rework",
+            "kind": "concept",
+            "label": "Rework was required",
+            "detail": "Re-solder the dc jack, the joints look dry. Test for continuity.",
+            "confidence": "medium"
+          }
+        ]
+      },
+      {
+        "id": "cat_Man",
+        "kind": "category",
+        "label": "Man",
+        "children": [
+          {
+            "id": "man_operator",
+            "kind": "concept",
+            "label": "Operator user_089",
+            "detail": "performed the rework",
+            "confidence": "medium"
+          }
+        ]
+      },
+      {
+        "id": "cat_Recurrence",
+        "kind": "category",
+        "label": "Recurrence",
+        "children": [
+          {
+            "id": "rec_count",
+            "kind": "evidence",
+            "label": "1 similar MISSING_PART events in last 12 wk",
+            "detail": "same defect_code, different defect_id",
+            "confidence": "high"
+          }
+        ]
+      }
+    ]
+  },
+  "bomTree": {
+    "id": "art_ART-00005",
+    "label": "Article ART-00005",
+    "children": [
+      {
+        "id": "BN-00057",
+        "label": "Anzeige · null",
+        "part_number": null,
+        "find_number": "Anzeige",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00058",
+            "label": "DSP · PM-00019",
+            "part_number": "PM-00019",
+            "find_number": "DSP",
+            "defects_count": 2,
+            "highlight": null,
+            "children": []
+          },
+          {
+            "id": "BN-00059",
+            "label": "KB · PM-00020",
+            "part_number": "PM-00020",
+            "find_number": "KB",
+            "defects_count": 1,
+            "highlight": null,
+            "children": []
+          },
+          {
+            "id": "BN-00060",
+            "label": "LED · PM-00005",
+            "part_number": "PM-00005",
+            "find_number": "LED",
+            "defects_count": 7,
+            "highlight": "root_cause",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "BN-00053",
+        "label": "Funkteil · null",
+        "part_number": null,
+        "find_number": "Funkteil",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00055",
+            "label": "C1 · PM-00001",
+            "part_number": "PM-00001",
+            "find_number": "C1",
+            "defects_count": 7,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00056",
+            "label": "R1 · PM-00004",
+            "part_number": "PM-00004",
+            "find_number": "R1",
+            "defects_count": 0,
+            "highlight": null,
+            "children": []
+          },
+          {
+            "id": "BN-00054",
+            "label": "U1 · PM-00006",
+            "part_number": "PM-00006",
+            "find_number": "U1",
+            "defects_count": 14,
+            "highlight": "watch",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "BN-00061",
+        "label": "Gehaeuse · null",
+        "part_number": null,
+        "find_number": "Gehaeuse",
+        "defects_count": 0,
+        "highlight": null,
+        "children": [
+          {
+            "id": "BN-00062",
+            "label": "H1 · PM-00011",
+            "part_number": "PM-00011",
+            "find_number": "H1",
+            "defects_count": 0,
+            "highlight": null,
+            "children": []
+          },
+          {
+            "id": "BN-00063",
+            "label": "J1 · PM-00010",
+            "part_number": "PM-00010",
+            "find_number": "J1",
+            "defects_count": 3,
+            "highlight": "watch",
+            "children": []
+          },
+          {
+            "id": "BN-00064",
+            "label": "SCR · PM-00012",
+            "part_number": "PM-00012",
+            "find_number": "SCR",
+            "defects_count": 0,
+            "highlight": null,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "ts": "2026-03-26 11:49:27.091025+00",
+      "kind": "build",
+      "id": "PRD-00461",
+      "label": "Built PRD-00461"
+    },
+    {
+      "ts": "2026-03-26 14:52:50.953436+00",
+      "kind": "defect",
+      "id": "DEF-00098",
+      "label": "MISSING_PART · DEF-00098",
+      "severity": "high"
+    },
+    {
+      "ts": "2026-03-27 16:20:11.636244+00",
+      "kind": "rework",
+      "id": "RW-00088",
+      "label": "Re-solder the dc jack, the joints look dry. Test for continu"
+    }
+  ],
+  "costTimeline": [
+    {
+      "weekStart": "2025-11-03",
+      "defectEur": 225.85,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-11-17",
+      "defectEur": 103.12,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-08",
+      "defectEur": 178.5,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-15",
+      "defectEur": 177.9,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2025-12-22",
+      "defectEur": 151.26,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-01-26",
+      "defectEur": 80.06,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-03-23",
+      "defectEur": 202.68,
+      "claimEur": 0
+    },
+    {
+      "weekStart": "2026-03-30",
+      "defectEur": 0,
+      "claimEur": 1090.13
+    }
+  ],
+  "resolution": {
+    "sampleSize": 1,
+    "meanDaysToClose": 5.5,
+    "medianDaysToClose": 5.5,
+    "actionTypes": [
+      {
+        "type": "corrective",
+        "count": 1
+      }
+    ],
+    "topActions": [
+      {
+        "text": "Wartet auf Freigabe Qualitaetsmanagement.",
+        "count": 1
+      }
+    ]
+  },
+  "prevention": {
+    "summary": "This incident is the latest of 3 `MISSING_PART` events in the recent 12 weeks.",
+    "steps": [
+      {
+        "title": "Audit Montage Linie 2",
+        "detail": "On-line audit of SOP + setup parameters for the occurrence section. Verify calibration record of any automated equipment.",
+        "owner": "Process engineering"
+      },
+      {
+        "title": "Add MISSING_PART check to incoming + in-process inspection",
+        "detail": "Add a visual / functional gate for `MISSING_PART` at the earliest section where it can be detected. Update control plan and FMEA.",
+        "owner": "Quality engineering"
+      },
+      {
+        "title": "Cross-reference similar articles",
+        "detail": "Scan the BOM for components sharing the suspect part — apply containment to every article that uses it.",
+        "owner": "Quality engineering"
+      },
+      {
+        "title": "Schedule effectiveness review",
+        "detail": "4-week follow-up: defect rate for `MISSING_PART` should drop below the 12-week baseline by ≥ 50 %.",
+        "owner": "Quality manager"
+      }
+    ],
+    "similarIncidents": [
+      {
+        "defect_id": "DEF-00086",
+        "ts": "2026-02-03 21:05:46.290034+00",
+        "defect_code": "MISSING_PART",
+        "severity": "low"
+      },
+      {
+        "defect_id": "DEF-00120",
+        "ts": "2025-11-10 14:25:50.615763+00",
+        "defect_code": "MISSING_PART",
+        "severity": "critical"
+      }
+    ],
+    "openInitiatives": []
+  }
+}
