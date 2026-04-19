@@ -1,19 +1,14 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { store } from "@/lib/storage/object-store";
 import type { FmeaDoc } from "./types";
 
 /**
  * FMEA drafts persist alongside 8D drafts + incident reports under
- * /public/<kind>/<id>.json. Kept in its own directory so the 8D
- * `DraftFile` shape stays untouched; both workspace rails merge the
- * lists client-side.
+ * the object store's `fmea-drafts/` prefix. Kept in its own prefix so
+ * the 8D `DraftFile` shape stays untouched; both workspace rails merge
+ * the lists client-side.
  */
 
-export const FMEA_DIR = path.join(process.cwd(), "public", "fmea-drafts");
-
-async function ensureDir() {
-  await fs.mkdir(FMEA_DIR, { recursive: true });
-}
+export const FMEA_PREFIX = "fmea-drafts";
 
 export function newFmeaId(): string {
   const d = new Date();
@@ -30,6 +25,10 @@ function filenameFor(id: string): string {
   return `${id}.json`;
 }
 
+function keyFor(id: string): string {
+  return `${FMEA_PREFIX}/${filenameFor(id)}`;
+}
+
 export type FmeaSummary = {
   id: string;
   name: string;
@@ -43,10 +42,8 @@ export type FmeaSummary = {
 };
 
 export async function saveFmea(doc: FmeaDoc): Promise<FmeaSummary> {
-  await ensureDir();
-  const full = path.join(FMEA_DIR, filenameFor(doc.id));
-  await fs.writeFile(full, JSON.stringify(doc, null, 2), "utf8");
-  const stat = await fs.stat(full);
+  const body = JSON.stringify(doc, null, 2);
+  await store().put(keyFor(doc.id), body);
   return {
     id: doc.id,
     name: doc.name,
@@ -56,16 +53,14 @@ export async function saveFmea(doc: FmeaDoc): Promise<FmeaSummary> {
     maxRpn: doc.rows.reduce((m, r) => Math.max(m, r.rpn), 0),
     generatedAt: doc.generatedAt,
     filename: filenameFor(doc.id),
-    sizeBytes: stat.size,
+    sizeBytes: Buffer.byteLength(body, "utf8"),
   };
 }
 
 export async function loadFmea(id: string): Promise<FmeaDoc | null> {
+  const raw = await store().get(keyFor(id));
+  if (!raw) return null;
   try {
-    const raw = await fs.readFile(
-      path.join(FMEA_DIR, filenameFor(id)),
-      "utf8",
-    );
     return JSON.parse(raw) as FmeaDoc;
   } catch {
     return null;
@@ -73,15 +68,14 @@ export async function loadFmea(id: string): Promise<FmeaDoc | null> {
 }
 
 export async function listFmeas(): Promise<FmeaSummary[]> {
-  await ensureDir();
-  const entries = await fs.readdir(FMEA_DIR).catch(() => []);
+  const entries = await store().list(FMEA_PREFIX);
   const out: FmeaSummary[] = [];
-  for (const name of entries) {
+  for (const entry of entries) {
+    const name = entry.pathname.slice(FMEA_PREFIX.length + 1);
     if (!name.endsWith(".json")) continue;
-    const full = path.join(FMEA_DIR, name);
+    const raw = await store().get(entry.pathname);
+    if (!raw) continue;
     try {
-      const stat = await fs.stat(full);
-      const raw = await fs.readFile(full, "utf8");
       const d = JSON.parse(raw) as FmeaDoc;
       out.push({
         id: d.id,
@@ -92,7 +86,7 @@ export async function listFmeas(): Promise<FmeaSummary[]> {
         maxRpn: d.rows.reduce((m, r) => Math.max(m, r.rpn), 0),
         generatedAt: d.generatedAt,
         filename: name,
-        sizeBytes: stat.size,
+        sizeBytes: entry.size,
       });
     } catch {
       /* skip malformed */
@@ -103,10 +97,6 @@ export async function listFmeas(): Promise<FmeaSummary[]> {
 }
 
 export async function deleteFmea(id: string): Promise<boolean> {
-  try {
-    await fs.unlink(path.join(FMEA_DIR, filenameFor(id)));
-    return true;
-  } catch {
-    return false;
-  }
+  await store().remove(keyFor(id));
+  return true;
 }

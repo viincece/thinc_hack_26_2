@@ -1,7 +1,6 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { DRAFTS_DIR, type DraftFile } from "./drafts";
-import { REPORTS_DIR } from "./reports/store";
+import { store } from "./storage/object-store";
+import { DRAFTS_PREFIX, type DraftFile } from "./drafts";
+import { REPORTS_PREFIX } from "./reports/store";
 import type { IncidentReport } from "./reports/types";
 
 /**
@@ -10,14 +9,14 @@ import type { IncidentReport } from "./reports/types";
  *
  * The /incidents and /initiatives pages build this once per render so a
  * row can surface "this defect has an 8D draft" without hitting the
- * file system per row.
+ * object store per row.
  *
  * Ids are mined from two places:
- *   - 8D drafts (`public/drafts/*.json`) — ids are only loosely
- *     structured, stored in `meta.<field>.source` strings and the free
- *     text of `doc.problem` / `doc.appreciation`. We regex-scan those.
- *   - Incident analyses (`public/reports/*.json`) — `source.defect_id`
- *     is explicit; product / part / article come from `facts`.
+ *   - 8D drafts (`drafts/*.json`) — ids are only loosely structured,
+ *     stored in `meta.<field>.source` strings and the free text of
+ *     `doc.problem` / `doc.appreciation`. We regex-scan those.
+ *   - Incident analyses (`reports/*.json`) — `source.defect_id` is
+ *     explicit; product / part / article come from `facts`.
  */
 
 export type DraftRef = {
@@ -25,7 +24,7 @@ export type DraftRef = {
   id: string; // "8D-260418-V74C" or "IR-260419-WKO7"
   name: string; // user-facing title
   href: string; // where to open it
-  createdAt: string; // ISO timestamp (file mtime for drafts, generatedAt for reports)
+  createdAt: string; // ISO timestamp (savedAt for drafts, generatedAt for reports)
 };
 
 export type DraftsIndex = {
@@ -71,22 +70,13 @@ function pushRef(
 }
 
 async function indexEightD(out: DraftsIndex): Promise<void> {
-  const entries = await fs.readdir(DRAFTS_DIR).catch(() => []);
+  const entries = await store().list(DRAFTS_PREFIX);
   await Promise.all(
     entries
-      .filter((n) => n.endsWith(".json"))
-      .map(async (name) => {
-        const full = path.join(DRAFTS_DIR, name);
-        let raw: string;
-        let stat: Awaited<ReturnType<typeof fs.stat>>;
-        try {
-          [raw, stat] = await Promise.all([
-            fs.readFile(full, "utf8"),
-            fs.stat(full),
-          ]);
-        } catch {
-          return;
-        }
+      .filter((e) => e.pathname.endsWith(".json"))
+      .map(async (entry) => {
+        const raw = await store().get(entry.pathname);
+        if (!raw) return;
         let parsed: DraftFile;
         try {
           parsed = JSON.parse(raw) as DraftFile;
@@ -103,7 +93,10 @@ async function indexEightD(out: DraftsIndex): Promise<void> {
           id: parsed.id,
           name: parsed.name,
           href: `/report/new?draft=${encodeURIComponent(parsed.id)}`,
-          createdAt: stat.mtime.toISOString(),
+          // `savedAt` is the authoritative write timestamp captured at
+          // save-time; falling back to the blob's upload time keeps
+          // legacy files sortable.
+          createdAt: parsed.savedAt ?? entry.uploadedAt,
         };
 
         const defects = new Set<string>();
@@ -122,18 +115,13 @@ async function indexEightD(out: DraftsIndex): Promise<void> {
 }
 
 async function indexAnalyses(out: DraftsIndex): Promise<void> {
-  const entries = await fs.readdir(REPORTS_DIR).catch(() => []);
+  const entries = await store().list(REPORTS_PREFIX);
   await Promise.all(
     entries
-      .filter((n) => n.endsWith(".json"))
-      .map(async (name) => {
-        const full = path.join(REPORTS_DIR, name);
-        let raw: string;
-        try {
-          raw = await fs.readFile(full, "utf8");
-        } catch {
-          return;
-        }
+      .filter((e) => e.pathname.endsWith(".json"))
+      .map(async (entry) => {
+        const raw = await store().get(entry.pathname);
+        if (!raw) return;
         let parsed: IncidentReport;
         try {
           parsed = JSON.parse(raw) as IncidentReport;

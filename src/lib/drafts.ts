@@ -1,6 +1,5 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import type { EightDDoc, FieldMetaMap } from "@/components/copilot/eight-d-doc";
+import { store } from "@/lib/storage/object-store";
 
 /**
  * Document kinds we persist. 8D is the only editor we ship today; FMEA and
@@ -47,11 +46,11 @@ export type DraftFile = {
   savedAt: string;
 };
 
-export const DRAFTS_DIR = path.join(process.cwd(), "public", "drafts");
-
-export async function ensureDraftsDir() {
-  await fs.mkdir(DRAFTS_DIR, { recursive: true });
-}
+/**
+ * Key prefix inside the object store.  Resolves under `public/drafts/`
+ * on local FS and `drafts/` inside the Vercel Blob store.
+ */
+export const DRAFTS_PREFIX = "drafts";
 
 /** <PREFIX>-YYMMDD-XXXX — short, collision-avoidant, prefix encodes kind */
 export function newDraftId(kind: DraftKind = "8D"): string {
@@ -93,30 +92,33 @@ export function parseFilename(filename: string):
   return { date: m[1]!, id: m[2]!, slug: m[3]! };
 }
 
+function keyFor(filename: string): string {
+  return `${DRAFTS_PREFIX}/${filename}`;
+}
+
 export async function listDrafts(): Promise<DraftRecord[]> {
-  await ensureDraftsDir();
-  const entries = await fs.readdir(DRAFTS_DIR).catch(() => []);
+  const entries = await store().list(DRAFTS_PREFIX);
   const out: DraftRecord[] = [];
-  for (const name of entries) {
-    if (!name.endsWith(".json")) continue;
-    const full = path.join(DRAFTS_DIR, name);
+  for (const entry of entries) {
+    const filename = entry.pathname.slice(DRAFTS_PREFIX.length + 1);
+    if (!filename.endsWith(".json")) continue;
+    const raw = await store().get(entry.pathname);
+    if (!raw) continue;
     try {
-      const stat = await fs.stat(full);
-      const raw = await fs.readFile(full, "utf8");
       const parsed = JSON.parse(raw) as DraftFile;
       out.push({
         id: parsed.id,
         name: parsed.name,
         date: parsed.date,
         kind: parsed.kind ?? kindFromId(parsed.id),
-        filename: name,
-        updatedAt: stat.mtime.toISOString(),
+        filename,
+        updatedAt: entry.uploadedAt,
         problemPreview: (parsed.doc?.problem ?? "").slice(0, 140),
         articleName:
           parsed.doc?.customer?.articleName ||
           parsed.doc?.supplier?.articleName ||
           undefined,
-        sizeBytes: stat.size,
+        sizeBytes: entry.size,
       });
     } catch {
       // Skip malformed files without failing the whole list.
@@ -127,11 +129,11 @@ export async function listDrafts(): Promise<DraftRecord[]> {
 }
 
 async function findFilenameById(id: string): Promise<string | null> {
-  await ensureDraftsDir();
-  const entries = await fs.readdir(DRAFTS_DIR).catch(() => []);
-  for (const name of entries) {
-    const parsed = parseFilename(name);
-    if (parsed?.id === id) return name;
+  const entries = await store().list(DRAFTS_PREFIX);
+  for (const entry of entries) {
+    const filename = entry.pathname.slice(DRAFTS_PREFIX.length + 1);
+    const parsed = parseFilename(filename);
+    if (parsed?.id === id) return filename;
   }
   return null;
 }
@@ -139,7 +141,8 @@ async function findFilenameById(id: string): Promise<string | null> {
 export async function loadDraft(id: string): Promise<DraftFile | null> {
   const filename = await findFilenameById(id);
   if (!filename) return null;
-  const raw = await fs.readFile(path.join(DRAFTS_DIR, filename), "utf8");
+  const raw = await store().get(keyFor(filename));
+  if (!raw) return null;
   return JSON.parse(raw) as DraftFile;
 }
 
@@ -150,7 +153,6 @@ export async function saveDraft(input: {
   doc: EightDDoc;
   meta: FieldMetaMap;
 }): Promise<DraftRecord> {
-  await ensureDraftsDir();
   const kind: DraftKind = input.kind ?? (input.id ? kindFromId(input.id) : "8D");
   const id = input.id ?? newDraftId(kind);
   const date = new Date().toISOString().slice(0, 10);
@@ -162,10 +164,11 @@ export async function saveDraft(input: {
     `${kind} report ${id}`;
 
   // If a draft with this id already exists under a different filename
-  // (e.g. the name changed), delete the old file so we don't duplicate.
+  // (e.g. the name changed), delete the old key so we don't leave a
+  // stale duplicate around.
   const existing = await findFilenameById(id);
   if (existing) {
-    await fs.unlink(path.join(DRAFTS_DIR, existing)).catch(() => {});
+    await store().remove(keyFor(existing));
   }
 
   const filename = buildFilename({ id, name: resolvedName, date });
@@ -178,28 +181,28 @@ export async function saveDraft(input: {
     meta: input.meta,
     savedAt: new Date().toISOString(),
   };
-  const full = path.join(DRAFTS_DIR, filename);
-  await fs.writeFile(full, JSON.stringify(payload, null, 2), "utf8");
-  const stat = await fs.stat(full);
+  const body = JSON.stringify(payload, null, 2);
+  await store().put(keyFor(filename), body);
+  const savedAt = payload.savedAt;
   return {
     id,
     name: resolvedName,
     date,
     kind,
     filename,
-    updatedAt: stat.mtime.toISOString(),
+    updatedAt: savedAt,
     problemPreview: (input.doc.problem ?? "").slice(0, 140),
     articleName:
       input.doc.customer?.articleName ||
       input.doc.supplier?.articleName ||
       undefined,
-    sizeBytes: stat.size,
+    sizeBytes: Buffer.byteLength(body, "utf8"),
   };
 }
 
 export async function deleteDraft(id: string): Promise<boolean> {
   const filename = await findFilenameById(id);
   if (!filename) return false;
-  await fs.unlink(path.join(DRAFTS_DIR, filename));
+  await store().remove(keyFor(filename));
   return true;
 }

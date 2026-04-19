@@ -1,12 +1,7 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { store } from "@/lib/storage/object-store";
 import type { IncidentReport, ReportSummary } from "./types";
 
-export const REPORTS_DIR = path.join(process.cwd(), "public", "reports");
-
-async function ensureDir() {
-  await fs.mkdir(REPORTS_DIR, { recursive: true });
-}
+export const REPORTS_PREFIX = "reports";
 
 export function newReportId(): string {
   const d = new Date();
@@ -20,11 +15,13 @@ function filename(id: string): string {
   return `${id}.json`;
 }
 
+function keyFor(id: string): string {
+  return `${REPORTS_PREFIX}/${filename(id)}`;
+}
+
 export async function saveReport(report: IncidentReport): Promise<ReportSummary> {
-  await ensureDir();
-  const full = path.join(REPORTS_DIR, filename(report.id));
-  await fs.writeFile(full, JSON.stringify(report, null, 2), "utf8");
-  const stat = await fs.stat(full);
+  const body = JSON.stringify(report, null, 2);
+  await store().put(keyFor(report.id), body);
   return {
     id: report.id,
     name: report.name,
@@ -33,15 +30,14 @@ export async function saveReport(report: IncidentReport): Promise<ReportSummary>
     articleName: report.facts.article_name,
     defectCode: report.facts.defect_code,
     filename: filename(report.id),
-    sizeBytes: stat.size,
+    sizeBytes: Buffer.byteLength(body, "utf8"),
   };
 }
 
 export async function loadReport(id: string): Promise<IncidentReport | null> {
-  await ensureDir();
-  const full = path.join(REPORTS_DIR, filename(id));
+  const raw = await store().get(keyFor(id));
+  if (!raw) return null;
   try {
-    const raw = await fs.readFile(full, "utf8");
     return normalizeReport(JSON.parse(raw));
   } catch {
     return null;
@@ -50,8 +46,8 @@ export async function loadReport(id: string): Promise<IncidentReport | null> {
 
 /**
  * Backfill defaults for every field added after the first few reports
- * were written — lets older JSON files on disk keep rendering instead of
- * crashing the page after a schema extension.
+ * were written — lets older JSON files on disk keep rendering instead
+ * of crashing the page after a schema extension.
  */
 function normalizeReport(raw: unknown): IncidentReport {
   const r = (raw ?? {}) as Partial<IncidentReport>;
@@ -109,25 +105,24 @@ function normalizeReport(raw: unknown): IncidentReport {
 }
 
 export async function listReports(): Promise<ReportSummary[]> {
-  await ensureDir();
-  const entries = await fs.readdir(REPORTS_DIR).catch(() => []);
+  const entries = await store().list(REPORTS_PREFIX);
   const out: ReportSummary[] = [];
-  for (const name of entries) {
+  for (const entry of entries) {
+    const name = entry.pathname.slice(REPORTS_PREFIX.length + 1);
     if (!name.endsWith(".json")) continue;
-    const full = path.join(REPORTS_DIR, name);
+    const raw = await store().get(entry.pathname);
+    if (!raw) continue;
     try {
-      const raw = await fs.readFile(full, "utf8");
       const r = JSON.parse(raw) as IncidentReport;
-      const stat = await fs.stat(full);
       out.push({
         id: r.id,
         name: r.name,
         generatedAt: r.generatedAt,
-        sourceDraftId: r.source.draftId,
-        articleName: r.facts.article_name,
-        defectCode: r.facts.defect_code,
+        sourceDraftId: r.source?.draftId ?? "",
+        articleName: r.facts?.article_name,
+        defectCode: r.facts?.defect_code,
         filename: name,
-        sizeBytes: stat.size,
+        sizeBytes: entry.size,
       });
     } catch {
       /* skip malformed */
@@ -138,12 +133,6 @@ export async function listReports(): Promise<ReportSummary[]> {
 }
 
 export async function deleteReport(id: string): Promise<boolean> {
-  await ensureDir();
-  const full = path.join(REPORTS_DIR, filename(id));
-  try {
-    await fs.unlink(full);
-    return true;
-  } catch {
-    return false;
-  }
+  await store().remove(keyFor(id));
+  return true;
 }
