@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "wiki:seed": "tsx scripts/seed-wiki.ts",
-    "wiki:ingest": "tsx scripts/ingest-manex.ts"
+    "wiki:ingest": "tsx scripts/ingest-manex.ts",
+    "forecast:refresh": "python scripts/forecast/forecast.py",
+    "forecast:dry-run": "python scripts/forecast/forecast.py --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

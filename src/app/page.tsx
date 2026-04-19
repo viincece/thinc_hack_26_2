@@ -1,3 +1,5 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import { ArrowRight, AlertTriangle, Boxes, Factory } from "lucide-react";
 import {
@@ -14,8 +16,17 @@ import { manex, type DefectDetail } from "@/lib/manex";
 import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
 import {
   DefectTrendChart,
+  type ForecastPayload,
   type TrendBucket,
 } from "@/components/dashboard/defect-trend-chart";
+
+/**
+ * Maximum age of the forecast JSON before we treat it as stale and hide
+ * the dashed lines. The Python job is meant to refresh daily; two weeks
+ * is a generous grace window during hackathon demos but still keeps us
+ * honest about "this prediction is fresh".
+ */
+const FORECAST_MAX_AGE_DAYS = 14;
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +156,34 @@ function isoWeek(d: Date): { key: string; label: string } {
   return { key: label, label };
 }
 
+/**
+ * Read the daily TabPFN forecast produced by
+ * `web/scripts/forecast/forecast.py`. Returns null (no error surfaced to
+ * the user) if the file is missing, malformed, or older than
+ * FORECAST_MAX_AGE_DAYS — the chart then silently renders history only.
+ */
+async function getForecast(): Promise<ForecastPayload | null> {
+  try {
+    const p = path.join(
+      process.cwd(),
+      "public",
+      "forecast",
+      "defect-cost.json",
+    );
+    const raw = await fs.readFile(p, "utf8");
+    const parsed = JSON.parse(raw) as Partial<ForecastPayload>;
+    if (!parsed || !Array.isArray(parsed.forecast) || parsed.forecast.length === 0)
+      return null;
+    if (typeof parsed.generatedAt !== "string") return null;
+    const ageMs = Date.now() - new Date(parsed.generatedAt).getTime();
+    if (!Number.isFinite(ageMs)) return null;
+    if (ageMs > FORECAST_MAX_AGE_DAYS * 24 * 3600 * 1000) return null;
+    return parsed as ForecastPayload;
+  } catch {
+    return null;
+  }
+}
+
 async function getCounts() {
   const safe = async (path: string) => {
     try {
@@ -164,11 +203,12 @@ async function getCounts() {
 }
 
 export default async function Home() {
-  const [pareto, defects, counts, trend] = await Promise.all([
+  const [pareto, defects, counts, trend, forecast] = await Promise.all([
     getPareto(),
     getRecentDefects(),
     getCounts(),
     getWeeklyTrend(),
+    getForecast(),
   ]);
 
   const apiOk = pareto.total > 0 || defects.length > 0;
@@ -303,11 +343,13 @@ export default async function Home() {
             <span className="font-semibold text-[color:#2563eb]">blue</span>)
             against inflicted cost in € (
             <span className="font-semibold text-[color:#eab308]">yellow</span>).
-            Missing weeks are filled with zero.
+            {forecast
+              ? " Dashed lines are a TabPFN forecast for the next 12 weeks."
+              : " Missing weeks are filled with zero."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DefectTrendChart data={trend} />
+          <DefectTrendChart data={trend} forecast={forecast} />
         </CardContent>
       </Card>
     </div>
