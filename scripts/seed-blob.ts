@@ -1,11 +1,13 @@
 /**
- * One-shot uploader that copies every committed JSON fixture under
- * `web/public/<prefix>/*.json` into a Vercel Blob store.
+ * One-shot uploader that copies every committed fixture under
+ * `web/public/<prefix>/*` into a Vercel Blob store. Supports both
+ * JSON (text) and PNG (binary) payloads:
  *
- *   drafts/         → 8D drafts
- *   reports/        → incident analyses
- *   fmea-drafts/    → FMEA drafts
- *   qm-summaries/   → voice-call AI summaries
+ *   drafts/         → 8D drafts                   (.json)
+ *   reports/        → incident analyses           (.json)
+ *   fmea-drafts/    → FMEA drafts                 (.json)
+ *   qm-summaries/   → voice-call AI summaries     (.json)
+ *   defect_images/  → defect reference photos     (.png)
  *
  * Run once, locally, after the Blob store is created on Vercel:
  *
@@ -29,7 +31,53 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-const PREFIXES = ["drafts", "reports", "fmea-drafts", "qm-summaries"] as const;
+type Ext = "json" | "png";
+
+type Descriptor = {
+  prefix: string;
+  exts: Ext[];
+  contentType: (ext: Ext) => string;
+};
+
+const CONTENT_TYPE: Record<Ext, string> = {
+  json: "application/json; charset=utf-8",
+  png: "image/png",
+};
+
+const DESCRIPTORS: Descriptor[] = [
+  {
+    prefix: "drafts",
+    exts: ["json"],
+    contentType: (e) => CONTENT_TYPE[e],
+  },
+  {
+    prefix: "reports",
+    exts: ["json"],
+    contentType: (e) => CONTENT_TYPE[e],
+  },
+  {
+    prefix: "fmea-drafts",
+    exts: ["json"],
+    contentType: (e) => CONTENT_TYPE[e],
+  },
+  {
+    prefix: "qm-summaries",
+    exts: ["json"],
+    contentType: (e) => CONTENT_TYPE[e],
+  },
+  {
+    prefix: "defect_images",
+    exts: ["png"],
+    contentType: (e) => CONTENT_TYPE[e],
+  },
+];
+
+function extOf(name: string): Ext | null {
+  const m = name.toLowerCase().match(/\.([^.]+)$/);
+  if (!m) return null;
+  const e = m[1] as Ext;
+  return e === "json" || e === "png" ? e : null;
+}
 
 async function main() {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
@@ -49,46 +97,50 @@ async function main() {
   const { put, list, del } = await import("@vercel/blob");
 
   console.log("→ Seeding Vercel Blob from web/public/** …");
-  console.log(`  mode: ${prune ? "mirror (will delete stale remote blobs)" : "additive (keep remote-only)"}`);
+  console.log(
+    `  mode: ${prune ? "mirror (will delete stale remote blobs)" : "additive (keep remote-only)"}`,
+  );
 
   const localKeys = new Set<string>();
   let totalBytes = 0;
   let uploaded = 0;
-  let skippedEmpty = 0;
+  let skipped = 0;
 
-  for (const prefix of PREFIXES) {
-    const dir = path.join(process.cwd(), "public", prefix);
+  for (const desc of DESCRIPTORS) {
+    const dir = path.join(process.cwd(), "public", desc.prefix);
     const names = await fs.readdir(dir).catch(() => []);
     if (!names.length) {
-      console.log(`  · ${prefix}/ — no files in public, skipping`);
+      console.log(`  · ${desc.prefix}/ — no files in public, skipping`);
       continue;
     }
-    console.log(`  · ${prefix}/ — ${names.length} file(s)`);
+    console.log(`  · ${desc.prefix}/ — ${names.length} file(s)`);
     for (const name of names) {
-      if (!name.endsWith(".json")) continue;
-      const pathname = `${prefix}/${name}`;
+      const ext = extOf(name);
+      if (!ext || !desc.exts.includes(ext)) continue;
+      const pathname = `${desc.prefix}/${name}`;
       const full = path.join(dir, name);
-      const body = await fs.readFile(full, "utf8").catch(() => null);
-      if (body == null) {
-        console.warn(`    (skip) ${pathname}: unreadable`);
-        skippedEmpty++;
-        continue;
-      }
       try {
+        const body =
+          ext === "json"
+            ? await fs.readFile(full, "utf8")
+            : await fs.readFile(full); // binary Buffer for PNGs
         await put(pathname, body, {
           access: "public",
           addRandomSuffix: false,
           allowOverwrite: true,
-          contentType: "application/json; charset=utf-8",
+          contentType: desc.contentType(ext),
           token,
         });
+        const size =
+          typeof body === "string"
+            ? Buffer.byteLength(body, "utf8")
+            : body.byteLength;
         localKeys.add(pathname);
         uploaded++;
-        totalBytes += Buffer.byteLength(body, "utf8");
-        console.log(
-          `    ✓ ${pathname}  (${Math.round(Buffer.byteLength(body, "utf8") / 1024)} kB)`,
-        );
+        totalBytes += size;
+        console.log(`    ✓ ${pathname}  (${Math.round(size / 1024)} kB)`);
       } catch (e) {
+        skipped++;
         console.warn(
           `    ✗ ${pathname}: ${e instanceof Error ? e.message : String(e)}`,
         );
@@ -98,10 +150,10 @@ async function main() {
 
   if (prune) {
     console.log("→ Pruning remote blobs not mirrored locally …");
-    let cursor: string | undefined;
     let deleted = 0;
-    for (const prefix of PREFIXES) {
-      const prefixSlash = `${prefix}/`;
+    for (const desc of DESCRIPTORS) {
+      const prefixSlash = `${desc.prefix}/`;
+      let cursor: string | undefined;
       do {
         const page = await list({
           prefix: prefixSlash,
@@ -124,7 +176,7 @@ async function main() {
 
   console.log("");
   console.log(
-    `✓ Done. ${uploaded} uploaded · ${Math.round(totalBytes / 1024)} kB · ${skippedEmpty} skipped`,
+    `✓ Done. ${uploaded} uploaded · ${Math.round(totalBytes / 1024)} kB · ${skipped} skipped`,
   );
 }
 
