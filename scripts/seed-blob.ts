@@ -178,6 +178,32 @@ async function main() {
   console.log(
     `✓ Done. ${uploaded} uploaded · ${Math.round(totalBytes / 1024)} kB · ${skipped} skipped`,
   );
+
+  // --- verification pass: ask Vercel Blob what it actually sees --------
+  console.log("");
+  console.log("→ Verifying remote store (what the deployed app will list) …");
+  for (const desc of DESCRIPTORS) {
+    const prefixSlash = `${desc.prefix}/`;
+    let cursor: string | undefined;
+    const pathnames: string[] = [];
+    do {
+      const page = await list({
+        prefix: prefixSlash,
+        cursor,
+        token,
+        limit: 1000,
+      });
+      for (const b of page.blobs) pathnames.push(b.pathname);
+      cursor = page.cursor;
+    } while (cursor);
+    console.log(
+      `  · ${desc.prefix}/ — ${pathnames.length} blob(s) on Vercel`,
+    );
+    for (const p of pathnames.slice(0, 5)) console.log(`      ${p}`);
+    if (pathnames.length > 5) {
+      console.log(`      …and ${pathnames.length - 5} more`);
+    }
+  }
 }
 
 main().catch((e) => {
