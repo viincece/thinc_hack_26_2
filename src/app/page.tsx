@@ -20,7 +20,9 @@ import {
 } from "@/components/dashboard/defect-trend-chart";
 import { VoiceReportsCard } from "@/components/dashboard/voice-reports-card";
 import { QualitySignals } from "@/components/dashboard/quality-signals";
+import { ProductionHealthCard } from "@/components/dashboard/production-health";
 import { parseWindow } from "@/lib/dashboard/window";
+import { getProductionSummary } from "@/lib/dashboard/production-summary";
 import { listQmReports } from "@/lib/qm-reports/manex";
 
 /**
@@ -195,13 +197,15 @@ export default async function Home({
 }) {
   const sp = (await searchParams) ?? {};
   const windowKey = parseWindow(sp.window);
-  const [pareto, defects, trend, forecast, voiceReports] = await Promise.all([
-    getPareto(),
-    getRecentDefects(),
-    getWeeklyTrend(),
-    getForecast(),
-    listQmReports({ limit: 5 }),
-  ]);
+  const [pareto, defects, trend, forecast, voiceReports, production] =
+    await Promise.all([
+      getPareto(),
+      getRecentDefects(),
+      getWeeklyTrend(),
+      getForecast(),
+      listQmReports({ limit: 5 }),
+      getProductionSummary(),
+    ]);
 
   const apiOk = pareto.total > 0 || defects.length > 0;
 
@@ -343,6 +347,21 @@ export default async function Home({
           </CardContent>
         </Card>
       </div>
+
+      {/* Bottom strip: production + quality health by product family */}
+      <Card>
+        <CardHeader className="px-4 pb-2 pt-3">
+          <CardTitle className="text-sm">Production &amp; quality health</CardTitle>
+          <CardDescription className="text-[11px] leading-tight">
+            Last 6 months, by article and by supplier — units built, how many
+            had a defect, how many came back as a field claim, and what the
+            whole thing cost.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 pt-0">
+          <ProductionHealthCard summary={production} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
