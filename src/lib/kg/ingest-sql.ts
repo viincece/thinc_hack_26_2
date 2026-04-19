@@ -330,30 +330,141 @@ async function ingestTestCodes() {
     "test_id,section_id,part_number,title,test_location,test_type,lower_limit,upper_limit",
   );
   const seen = new Set<string>();
+  // A single test_location is defined once per part (e.g. "Label + SN
+  // Kontrolle" applies to many parts across the line). Track pairs so
+  // the TESTS_PART edge is emitted exactly once per (testcode, part).
+  const seenTestPart = new Set<string>();
   for (const t of rows) {
     // Use the test_location as the identifier — it is shared across repeated
     // test definitions for the same measurement (e.g. "VIB_TEST").
     const code = t.test_location?.trim();
     if (!code) continue;
     const id = `testcode:${code}`;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    await upsertEntity({
-      id,
-      entity_kind: "TestCode",
-      label: code,
-      manex_table: "test",
-      manex_id: t.test_id,
-      body:
-        `${t.title ?? code}${
-          t.test_type ? `\n\nType: ${t.test_type}.` : ""
-        }${t.lower_limit != null || t.upper_limit != null
-          ? `\n\nLimits: [${t.lower_limit ?? "—"}, ${t.upper_limit ?? "—"}].`
-          : ""}`,
-    });
-    if (t.section_id) await link("BELONGS_TO", id, t.section_id);
+    if (!seen.has(id)) {
+      seen.add(id);
+      await upsertEntity({
+        id,
+        entity_kind: "TestCode",
+        label: code,
+        manex_table: "test",
+        manex_id: t.test_id,
+        body:
+          `${t.title ?? code}${
+            t.test_type ? `\n\nType: ${t.test_type}.` : ""
+          }${t.lower_limit != null || t.upper_limit != null
+            ? `\n\nLimits: [${t.lower_limit ?? "—"}, ${t.upper_limit ?? "—"}].`
+            : ""}`,
+      });
+      if (t.section_id) await link("BELONGS_TO", id, t.section_id);
+    }
+    if (t.part_number) {
+      const key = `${id}→${t.part_number}`;
+      if (!seenTestPart.has(key)) {
+        seenTestPart.add(key);
+        await link("TESTS_PART", id, t.part_number);
+      }
+    }
   }
   return seen.size;
+}
+
+/* ------- Defect ↔ Test / Section / Part mining -------
+ *
+ * The /defect rows embed every link we need to populate the graph's
+ * defect-centric edges:
+ *
+ *   - defect_code ──DETECTED_BY──▶ test_location  (via detected_test_result_id → /test_result.test_id → /test.test_location)
+ *   - defect_code ──OCCURS_AT──▶ section          (via occurrence_section_id)
+ *   - defect_code ──AFFECTS_PART──▶ part_number   (via reported_part_number)
+ *
+ * All three are **empirical** — they reflect what the shop-floor has
+ * actually seen, not a design contract. A pair appears as an edge once
+ * it has been observed at least `MIN_PAIR_COUNT` times, so a single
+ * mis-filed defect row doesn't clutter the wiki graph.
+ */
+
+type DefectLinkRow = {
+  defect_code: string;
+  detected_test_result_id: string | null;
+  occurrence_section_id: string | null;
+  reported_part_number: string | null;
+};
+type TestResultRow = {
+  test_result_id: string;
+  test_id: string | null;
+};
+
+const MIN_PAIR_COUNT = 1;
+
+async function ingestDefectLinks() {
+  const [defects, testResults, tests] = await Promise.all([
+    fetchAll<DefectLinkRow>(
+      "/defect",
+      "defect_code,detected_test_result_id,occurrence_section_id,reported_part_number",
+    ),
+    fetchAll<TestResultRow>("/test_result", "test_result_id,test_id"),
+    fetchAll<TestRow>("/test", "test_id,test_location,section_id,part_number,title,test_type,lower_limit,upper_limit"),
+  ]);
+
+  // test_result_id → test_id → test_location
+  const trToTestId = new Map<string, string>();
+  for (const tr of testResults) {
+    if (tr.test_id) trToTestId.set(tr.test_result_id, tr.test_id);
+  }
+  const testIdToLocation = new Map<string, string>();
+  for (const t of tests) {
+    if (t.test_location?.trim()) {
+      testIdToLocation.set(t.test_id, t.test_location.trim());
+    }
+  }
+
+  const detectedByPairs = new Map<string, number>(); // "defectcode→testcode"
+  const occursAtPairs = new Map<string, number>();   // "defectcode→sectionId"
+  const affectsPairs = new Map<string, number>();    // "defectcode→partNumber"
+
+  for (const d of defects) {
+    const dcId = `defectcode:${d.defect_code}`;
+    if (d.detected_test_result_id) {
+      const tid = trToTestId.get(d.detected_test_result_id);
+      const loc = tid ? testIdToLocation.get(tid) : undefined;
+      if (loc) {
+        const key = `${dcId}|testcode:${loc}`;
+        detectedByPairs.set(key, (detectedByPairs.get(key) ?? 0) + 1);
+      }
+    }
+    if (d.occurrence_section_id) {
+      const key = `${dcId}|${d.occurrence_section_id}`;
+      occursAtPairs.set(key, (occursAtPairs.get(key) ?? 0) + 1);
+    }
+    if (d.reported_part_number) {
+      const key = `${dcId}|${d.reported_part_number}`;
+      affectsPairs.set(key, (affectsPairs.get(key) ?? 0) + 1);
+    }
+  }
+
+  const emit = async (rel: "DETECTED_BY" | "OCCURS_AT" | "AFFECTS_PART", pairs: Map<string, number>) => {
+    let n = 0;
+    for (const [key, count] of pairs) {
+      if (count < MIN_PAIR_COUNT) continue;
+      const [from, to] = key.split("|");
+      if (!from || !to) continue;
+      await link(rel, from, to);
+      n += 1;
+    }
+    return n;
+  };
+
+  const [nDet, nOcc, nAff] = await Promise.all([
+    emit("DETECTED_BY", detectedByPairs),
+    emit("OCCURS_AT", occursAtPairs),
+    emit("AFFECTS_PART", affectsPairs),
+  ]);
+  return {
+    defectsScanned: defects.length,
+    detectedBy: nDet,
+    occursAt: nOcc,
+    affectsPart: nAff,
+  };
 }
 
 /* ------- Abstract observations + concepts ------- */
@@ -461,6 +572,9 @@ export async function ingestFromManex() {
   const bom = await ingestBom(articles);
   const defects = await ingestDefectCodes();
   const tests = await ingestTestCodes();
+  // Must run after both DefectCode and TestCode entities exist — the
+  // STRUCTURAL edges reference them by id.
+  const defectLinks = await ingestDefectLinks();
 
   await emitAnalytics(articles, bom.bomSizeByArticle, defects);
 
@@ -468,7 +582,8 @@ export async function ingestFromManex() {
     `Factories:${factories}, Lines:${lines}, Sections:${sections}, ` +
     `Articles:${articles.length}, Parts:${parts}, Batches:${batches}, ` +
     `BomPositions:${bom.positions}, DefectCodes:${defects.distinctCodes}, ` +
-    `TestCodes:${tests}.`;
+    `TestCodes:${tests}, ` +
+    `DefectLinks: DETECTED_BY ${defectLinks.detectedBy} / OCCURS_AT ${defectLinks.occursAt} / AFFECTS_PART ${defectLinks.affectsPart}.`;
 
   await logEntry("ingest_sql", `Pulled structural entities from Manex: ${summary}`);
 

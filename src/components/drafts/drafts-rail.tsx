@@ -74,9 +74,10 @@ export function DraftsRail() {
     const my = ++seq.current;
     setLoading(true);
     try {
-      const [draftsRes, reportsRes] = await Promise.all([
+      const [draftsRes, reportsRes, fmeaRes] = await Promise.all([
         fetch("/api/drafts", { cache: "no-store" }),
         fetch("/api/reports", { cache: "no-store" }),
+        fetch("/api/fmea", { cache: "no-store" }),
       ]);
       const drafted = draftsRes.ok
         ? ((await draftsRes.json()) as { drafts: Summary[] }).drafts ?? []
@@ -100,7 +101,28 @@ export function DraftsRail() {
         problemPreview: [r.defectCode, r.articleName].filter(Boolean).join(" · "),
         articleName: r.articleName,
       }));
-      const merged = [...drafted, ...analyses].sort((a, b) =>
+      type FmeaSum = {
+        id: string;
+        name: string;
+        articleId: string;
+        articleName?: string;
+        rowCount: number;
+        maxRpn: number;
+        generatedAt: string;
+      };
+      const fmeas = fmeaRes.ok
+        ? ((await fmeaRes.json()) as { fmeas: FmeaSum[] }).fmeas ?? []
+        : [];
+      const fmeaItems: Summary[] = fmeas.map((f) => ({
+        id: f.id,
+        name: f.name,
+        date: f.generatedAt.slice(0, 10),
+        kind: "FMEA",
+        updatedAt: f.generatedAt,
+        problemPreview: `${f.rowCount} rows · top RPN ${f.maxRpn}`,
+        articleName: f.articleName,
+      }));
+      const merged = [...drafted, ...analyses, ...fmeaItems].sort((a, b) =>
         a.updatedAt < b.updatedAt ? 1 : -1,
       );
       if (seq.current === my) setDrafts(merged);
@@ -206,7 +228,9 @@ export function DraftsRail() {
             const href =
               d.kind === "Analysis"
                 ? `/reports/${encodeURIComponent(d.id)}`
-                : `/report/new?draft=${encodeURIComponent(d.id)}`;
+                : d.kind === "FMEA"
+                  ? `/report/fmea/${encodeURIComponent(d.id)}`
+                  : `/report/new?draft=${encodeURIComponent(d.id)}`;
             return (
               <Link
                 key={d.id}
@@ -360,7 +384,9 @@ export function DraftsRail() {
                   href={
                     d.kind === "Analysis"
                       ? `/reports/${encodeURIComponent(d.id)}`
-                      : `/report/new?draft=${encodeURIComponent(d.id)}`
+                      : d.kind === "FMEA"
+                        ? `/report/fmea/${encodeURIComponent(d.id)}`
+                        : `/report/new?draft=${encodeURIComponent(d.id)}`
                   }
                   className={cn(
                     "group block rounded-md border border-sage-border/70 bg-white/60 px-2 py-1.5 transition-colors",

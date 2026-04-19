@@ -205,11 +205,31 @@ export class KgClient {
   /** Low-level query that does NOT call init (avoids deadlock during setup). */
   private async _exec(cypher: string, params?: Record<string, unknown>) {
     if (!this._conn) throw new Error("Kuzu connection not ready");
+    let r: KuzuConn;
     if (params && Object.keys(params).length) {
       const prep = await this._conn.prepare(cypher);
-      return this._conn.execute(prep, params);
+      r = await this._conn.execute(prep, params);
+    } else {
+      r = await this._conn.query(cypher);
     }
-    return this._conn.query(cypher);
+    // kuzu-wasm's QueryResult#toString references an internal
+    // `dispatcher` that is only defined while a query is executing.
+    // Next 16 dev devtools stringifies awaited values for its component-
+    // performance trace; on the trace path `dispatcher` is undefined
+    // and the call throws `ReferenceError: dispatcher is not defined`,
+    // surfaced to the user as a runtime error overlay on /wiki and any
+    // other page that awaits Kuzu results. Replace toString with a
+    // constant so the tracer's attempt is harmless.
+    try {
+      Object.defineProperty(r, "toString", {
+        value: () => "[kuzu QueryResult]",
+        configurable: true,
+        writable: true,
+      });
+    } catch {
+      /* ignore — the patch is defence-in-depth, not required */
+    }
+    return r;
   }
 
   async run(
@@ -433,16 +453,53 @@ export class KgClient {
   }
 }
 
+/**
+ * Best-effort patch: replace kuzu-wasm's QueryResult#toString (which
+ * references an internal `dispatcher` that's only defined during a
+ * query call) with a safe constant. Next 16 dev devtools stringifies
+ * awaited values for its component-performance trace; unpatched, that
+ * path surfaces `ReferenceError: dispatcher is not defined` in the
+ * browser overlay. We also patch instances in `_exec` as belt-and-braces
+ * because not all kuzu-wasm builds expose the class on the module's
+ * public surface.
+ *
+ * Idempotent — safe to call on every `loadKuzu()`, even when the module
+ * is already cached on globalThis.
+ */
+function patchQueryResultToString(mod: KuzuMod): void {
+  try {
+    const candidates = [
+      (mod as { QueryResult?: { prototype?: { toString?: unknown } } })
+        .QueryResult,
+      (mod as { default?: { QueryResult?: { prototype?: { toString?: unknown } } } })
+        .default?.QueryResult,
+    ];
+    for (const c of candidates) {
+      if (c?.prototype && typeof c.prototype.toString === "function") {
+        c.prototype.toString = function () {
+          return "[kuzu QueryResult]";
+        };
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 async function loadKuzu(): Promise<KuzuMod> {
   // Cache the kuzu-wasm module on globalThis so HMR reloads don't re-import
   // it — each fresh import spawns a new tiny-worker and pins more memory in
   // the shared WASM heap. Returning the cached module keeps us to one worker
   // per Node process, which is the actual fix for the MaxListeners /
   // Buffer-exhausted cascade under dev.
-  if (global.__kg_mod) return global.__kg_mod;
+  if (global.__kg_mod) {
+    patchQueryResultToString(global.__kg_mod);
+    return global.__kg_mod;
+  }
   const { createRequire } = await import("node:module");
   const req = createRequire(import.meta.url);
   const mod = req("kuzu-wasm/nodejs");
+  patchQueryResultToString(mod);
   global.__kg_mod = mod;
   return mod;
 }

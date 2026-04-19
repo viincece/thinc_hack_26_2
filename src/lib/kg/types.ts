@@ -46,7 +46,16 @@ export type StructuralRel =
   | "REWORKED_BY"
   | "BELONGS_TO"
   | "ON_PRODUCT"
-  | "MAPPED_TO";
+  | "MAPPED_TO"
+  // Defect-anchored empirical links mined from historical /defect rows.
+  // "DefectCode is detected by this test", "…typically originates at
+  // this section", "…commonly affects this part."
+  | "DETECTED_BY"
+  | "OCCURS_AT"
+  | "AFFECTS_PART"
+  // Static metadata from the /test table — "this test exercises this
+  // part".
+  | "TESTS_PART";
 
 export type Vector = number[];
 

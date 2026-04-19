@@ -91,9 +91,10 @@ export function ReportSidepanel({
     const mySeq = ++refreshSeq.current;
     setLoading(true);
     try {
-      const [draftsRes, reportsRes] = await Promise.all([
+      const [draftsRes, reportsRes, fmeaRes] = await Promise.all([
         fetch("/api/drafts", { cache: "no-store" }),
         fetch("/api/reports", { cache: "no-store" }),
+        fetch("/api/fmea", { cache: "no-store" }),
       ]);
       const drafted = draftsRes.ok
         ? ((await draftsRes.json()) as { drafts: DraftSummary[] }).drafts ?? []
@@ -122,7 +123,32 @@ export function ReportSidepanel({
         articleName: r.articleName,
         sizeBytes: r.sizeBytes,
       }));
-      const merged = [...drafted, ...analyses].sort((a, b) =>
+      type FmeaSummary = {
+        id: string;
+        name: string;
+        articleId: string;
+        articleName?: string;
+        rowCount: number;
+        maxRpn: number;
+        generatedAt: string;
+        filename: string;
+        sizeBytes: number;
+      };
+      const fmeas = fmeaRes.ok
+        ? ((await fmeaRes.json()) as { fmeas: FmeaSummary[] }).fmeas ?? []
+        : [];
+      const fmeaItems: DraftSummary[] = fmeas.map((f) => ({
+        id: f.id,
+        name: f.name,
+        date: f.generatedAt.slice(0, 10),
+        kind: "FMEA",
+        filename: f.filename,
+        updatedAt: f.generatedAt,
+        problemPreview: `${f.rowCount} rows · top RPN ${f.maxRpn}`,
+        articleName: f.articleName,
+        sizeBytes: f.sizeBytes,
+      }));
+      const merged = [...drafted, ...analyses, ...fmeaItems].sort((a, b) =>
         a.updatedAt < b.updatedAt ? 1 : -1,
       );
       if (refreshSeq.current === mySeq) setDrafts(merged);
@@ -152,7 +178,12 @@ export function ReportSidepanel({
   const doDelete = useCallback(
     async (id: string, kind: DraftKind) => {
       if (!confirm("Delete this saved item?")) return;
-      const endpoint = kind === "Analysis" ? "/api/reports" : "/api/drafts";
+      const endpoint =
+        kind === "Analysis"
+          ? "/api/reports"
+          : kind === "FMEA"
+            ? "/api/fmea"
+            : "/api/drafts";
       try {
         const r = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
           method: "DELETE",
@@ -170,6 +201,8 @@ export function ReportSidepanel({
     async (d: DraftSummary) => {
       if (d.kind === "Analysis") {
         router.push(`/reports/${encodeURIComponent(d.id)}`);
+      } else if (d.kind === "FMEA") {
+        router.push(`/report/fmea/${encodeURIComponent(d.id)}`);
       } else {
         await onLoadDraft(d.id);
       }

@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, AlertTriangle, Boxes, Factory, Radio } from "lucide-react";
+import { ArrowRight, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,17 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge, severityVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ParetoChart } from "@/components/pareto-chart";
 import { manex, type DefectDetail } from "@/lib/manex";
 import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
+import { NewFmeaButton } from "@/components/fmea/new-fmea-dialog";
 import {
   DefectTrendChart,
   type ForecastPayload,
   type TrendBucket,
 } from "@/components/dashboard/defect-trend-chart";
 import { VoiceReportsCard } from "@/components/dashboard/voice-reports-card";
+import { QualitySignals } from "@/components/dashboard/quality-signals";
+import { parseWindow } from "@/lib/dashboard/window";
 import { listQmReports } from "@/lib/qm-reports/manex";
 
 /**
@@ -186,34 +188,21 @@ async function getForecast(): Promise<ForecastPayload | null> {
   }
 }
 
-async function getCounts() {
-  const safe = async (path: string) => {
-    try {
-      const rows = await manex<unknown[]>(path, { limit: 1, select: "*" });
-      // PostgREST returns Content-Range for total count, but we keep it simple.
-      return Array.isArray(rows) ? rows.length : 0;
-    } catch {
-      return 0;
-    }
-  };
-  const [defects, claims, actions] = await Promise.all([
-    safe("/defect"),
-    safe("/field_claim"),
-    safe("/product_action"),
+export default async function Home({
+  searchParams,
+}: {
+  // Next 15+: searchParams is a promise.
+  searchParams?: Promise<{ window?: string | string[] }>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const windowKey = parseWindow(sp.window);
+  const [pareto, defects, trend, forecast, voiceReports] = await Promise.all([
+    getPareto(),
+    getRecentDefects(),
+    getWeeklyTrend(),
+    getForecast(),
+    listQmReports({ limit: 5 }),
   ]);
-  return { defects, claims, actions };
-}
-
-export default async function Home() {
-  const [pareto, defects, counts, trend, forecast, voiceReports] =
-    await Promise.all([
-      getPareto(),
-      getRecentDefects(),
-      getCounts(),
-      getWeeklyTrend(),
-      getForecast(),
-      listQmReports({ limit: 5 }),
-    ]);
 
   const apiOk = pareto.total > 0 || defects.length > 0;
 
@@ -237,6 +226,7 @@ export default async function Home() {
             </Link>
           </Button>
           <NewAnalysisButton variant="outline" />
+          <NewFmeaButton variant="outline" />
           <Button asChild size="sm">
             <Link href="/report/new">New 8D report</Link>
           </Button>
@@ -257,73 +247,77 @@ export default async function Home() {
         </Card>
       ) : null}
 
-      {/* KPI strip — 4-up on md, compact */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          icon={<AlertTriangle className="h-3.5 w-3.5" />}
-          label="Defect codes"
-          value={pareto.buckets.length.toString()}
-          hint={`${pareto.total} defects total`}
-        />
-        <StatCard
-          icon={<Factory className="h-3.5 w-3.5" />}
-          label="Field claims"
-          value={counts.claims > 0 ? "tracking" : "—"}
-          hint="/field_claim"
-        />
-        <StatCard
-          icon={<Boxes className="h-3.5 w-3.5" />}
-          label="Initiatives"
-          value={counts.actions > 0 ? "active" : "—"}
-          hint="/product_action"
-        />
-        <StatCard
-          icon={<Radio className="h-3.5 w-3.5" />}
-          label="Voice reports"
-          value={voiceReports.length.toString()}
-          hint="last 24 h"
-        />
-      </div>
+      {/* KPI strip — window-driven: Defects / Types / Voice / Cost. */}
+      <QualitySignals windowKey={windowKey} />
 
       {/* Live feeds — voice reports + recent defects side-by-side */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <VoiceReportsCard initialItems={voiceReports} />
 
-        <Card className="flex h-full flex-col">
-          <CardHeader className="px-3 pb-2 pt-3">
-            <CardTitle className="text-sm">Recent defects</CardTitle>
-            <CardDescription className="text-[11px] leading-tight">
-              Latest 5 defects on the shop floor.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 space-y-1 px-2 pb-2 pt-0">
+        {/* Recent defects — mirror the Voice Reports card header + row
+            geometry so the two live feeds scan as a pair. */}
+        <div className="flex h-full flex-col rounded-md border border-sage-border bg-parchment text-olive-ink">
+          <div className="flex items-center justify-between gap-3 border-b border-sage-border/70 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-olive">
+                <AlertTriangle className="h-3 w-3" />
+                Recent
+              </span>
+              <h3 className="truncate text-sm font-bold leading-none tracking-tight text-deep-olive">
+                Defects on the shop floor
+              </h3>
+              <span className="shrink-0 text-[10px] text-muted-olive">
+                · last {defects.length}
+              </span>
+            </div>
+          </div>
+          <div className="flex-1 px-2 py-1.5">
             {defects.length ? (
-              defects.map((d) => (
-                <Link
-                  key={d.defect_id}
-                  href={`/incidents/${d.defect_id}`}
-                  className="flex items-center gap-2 rounded-md border border-sage-border/70 bg-white/60 px-2 py-1 text-[12px] hover:border-light-border hover:bg-white"
-                >
-                  <span className="min-w-0 flex-1 truncate font-medium">
-                    {d.defect_code}
-                  </span>
-                  <Badge variant={severityVariant(d.severity)}>
-                    {d.severity}
-                  </Badge>
-                  <span className="shrink-0 truncate text-[10px] text-muted-olive">
-                    {d.product_id}
-                    {d.reported_part_number ? ` · ${d.reported_part_number}` : ""}
-                  </span>
-                  <span className="shrink-0 text-[10px] tabular-nums text-muted-olive">
-                    {dateOnly(d)}
-                  </span>
-                </Link>
-              ))
+              <ul className="space-y-1">
+                {defects.map((d) => {
+                  const sev = (d.severity ?? "").toLowerCase();
+                  const dot =
+                    sev === "critical"
+                      ? "bg-red-500"
+                      : sev === "high"
+                        ? "bg-orange-500"
+                        : sev === "medium"
+                          ? "bg-amber-400"
+                          : sev === "low"
+                            ? "bg-emerald-500"
+                            : "bg-zinc-300";
+                  return (
+                    <li key={d.defect_id}>
+                      <Link
+                        href={`/incidents/${d.defect_id}`}
+                        className="flex items-center gap-2 rounded-md border border-sage-border/70 bg-white/60 px-2 py-1 text-[12px] hover:border-light-border hover:bg-white"
+                      >
+                        <span
+                          className={`h-2 w-2 shrink-0 rounded-full ${dot}`}
+                          title={`severity ${sev || "unknown"}`}
+                        />
+                        <span className="min-w-0 flex-1 truncate font-medium">
+                          {d.defect_code}
+                        </span>
+                        <span className="hidden shrink-0 truncate text-[10px] text-muted-olive sm:inline">
+                          {d.product_id}
+                          {d.reported_part_number
+                            ? ` · ${d.reported_part_number}`
+                            : ""}
+                        </span>
+                        <span className="shrink-0 text-[10px] tabular-nums text-muted-olive">
+                          {dateOnly(d)}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             ) : (
               <Empty>No recent defects.</Empty>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Analytics — trend + Pareto side-by-side */}
@@ -364,39 +358,6 @@ export default async function Home() {
         </Card>
       </div>
     </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  return (
-    <Card className="transition-colors hover:border-light-border">
-      <CardContent className="flex items-center justify-between px-3 py-2">
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive">
-            {label}
-          </div>
-          <div className="mt-0.5 font-sans text-2xl font-extrabold leading-none text-deep-olive">
-            {value}
-          </div>
-          {hint ? (
-            <div className="mt-0.5 text-[10px] text-muted-olive">{hint}</div>
-          ) : null}
-        </div>
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-sage-cream text-olive-ink ring-1 ring-inset ring-sage-border">
-          {icon}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
