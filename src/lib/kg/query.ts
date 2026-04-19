@@ -1,5 +1,7 @@
 import { kg } from "./client";
 import { cosine, embed } from "./embed";
+import { useSnapshot } from "./runtime";
+import * as snap from "./source";
 
 /* -------------------------------------------------------------- *
  *  Read helpers used by the agent tools.
@@ -24,6 +26,7 @@ export async function anchor(handle: {
   article_id?: string;
   defect_code?: string;
 }): Promise<Array<{ id: string; kind: string; label: string }>> {
+  if (useSnapshot()) return snap.anchor(handle);
   const c = kg();
   if (handle.entity_id) {
     return (await c.run(
@@ -55,6 +58,7 @@ export async function anchor(handle: {
 }
 
 export async function getNode(id: string) {
+  if (useSnapshot()) return snap.getNode(id);
   const c = kg();
   const queries: Array<[string, string]> = [
     [
@@ -96,6 +100,7 @@ export async function getNode(id: string) {
 }
 
 export async function neighborhood(id: string, depth = 2) {
+  if (useSnapshot()) return snap.neighborhood(id, depth);
   const c = kg();
   const d = Math.max(1, Math.min(3, Math.floor(depth)));
 
@@ -160,6 +165,7 @@ export async function neighborhood(id: string, depth = 2) {
 
 export async function observationsAbout(ids: string[], limit = 40) {
   if (!ids.length) return [];
+  if (useSnapshot()) return snap.observationsAbout(ids, limit);
   const c = kg();
   const ph = ids.map((_, i) => `$id${i}`).join(",");
   const params = Object.fromEntries(ids.map((v, i) => [`id${i}`, v]));
@@ -201,6 +207,7 @@ export async function observationsAbout(ids: string[], limit = 40) {
 
 export async function reportsAbout(ids: string[], limit = 10) {
   if (!ids.length) return [];
+  if (useSnapshot()) return snap.reportsAbout(ids, limit);
   const c = kg();
   const ph = ids.map((_, i) => `$id${i}`).join(",");
   const params = Object.fromEntries(ids.map((v, i) => [`id${i}`, v]));
@@ -244,6 +251,7 @@ export async function reportsAbout(ids: string[], limit = 10) {
 }
 
 export async function hybridSearch(query: string, k = 10) {
+  if (useSnapshot()) return snap.hybridSearch(query, k);
   const c = kg();
   const vec = await embed(query);
   const needle = query.toLowerCase();
@@ -310,6 +318,7 @@ export async function hybridSearch(query: string, k = 10) {
 }
 
 export async function similarReports(text: string, k = 5) {
+  if (useSnapshot()) return snap.similarReports(text, k);
   const c = kg();
   const vec = await embed(text);
   const reports = (await c.run(

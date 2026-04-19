@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       "./node_modules/tiny-worker/**/*",
       "./node_modules/threads/**/*",
       "./wiki/**/*",
+      // Static snapshot of the KG — read by src/lib/kg/source.ts when
+      // we can't boot kuzu-wasm (Vercel). Next.js auto-traces the
+      // `public/` tree for the CDN but not for serverless function
+      // filesystems, so we whitelist the file here.
+      "./public/wiki-snapshot.json",
     ],
   },
 };

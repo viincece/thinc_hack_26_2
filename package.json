@@ -9,6 +9,8 @@
     "lint": "eslint",
     "wiki:seed": "tsx scripts/seed-wiki.ts",
     "wiki:ingest": "tsx scripts/ingest-manex.ts",
+    "wiki:snapshot": "tsx scripts/dump-kg-snapshot.ts",
+    "prebuild": "tsx scripts/dump-kg-snapshot.ts",
     "forecast:refresh": "python scripts/forecast/forecast.py",
     "forecast:dry-run": "python scripts/forecast/forecast.py --dry-run"
   },

@@ -1,8 +1,15 @@
 /**
  * Server-side KG queries used by the /wiki UI. Keep these separate from the
  * agent-facing query.ts so it's easier to tune each surface independently.
+ *
+ * Every exported function short-circuits to `./source` when
+ * `useSnapshot()` is true — that's how the wiki keeps working on
+ * Vercel, where kuzu-wasm can't boot reliably. Local dev + any
+ * platform with a normal Node runtime continues to hit Kuzu directly.
  */
 import { kg } from "./client";
+import { useSnapshot } from "./runtime";
+import * as snap from "./source";
 
 export type EntitySummary = {
   id: string;
@@ -53,6 +60,7 @@ export type LogRow = {
 };
 
 export async function stats() {
+  if (useSnapshot()) return snap.stats();
   const c = kg();
   const [ents, cons, obs, reps, srcs, logs] = await Promise.all([
     c.run(`MATCH (n:Entity) RETURN COUNT(n) AS n`),
@@ -75,6 +83,7 @@ export async function stats() {
 }
 
 export async function listEntities(): Promise<EntitySummary[]> {
+  if (useSnapshot()) return snap.listEntities();
   const rows = await kg().run(
     `MATCH (n:Entity)
      RETURN n.id AS id, n.kind AS kind, n.label AS label,
@@ -86,6 +95,7 @@ export async function listEntities(): Promise<EntitySummary[]> {
 }
 
 export async function listConcepts(): Promise<ConceptSummary[]> {
+  if (useSnapshot()) return snap.listConcepts();
   const rows = await kg().run(
     `MATCH (n:Concept)
      RETURN n.id AS id, n.title AS title, n.body AS body,
@@ -98,6 +108,7 @@ export async function listConcepts(): Promise<ConceptSummary[]> {
 export async function listRecentObservations(
   limit = 25,
 ): Promise<ObservationSummary[]> {
+  if (useSnapshot()) return snap.listRecentObservations(limit);
   const cap = Math.max(1, Math.min(limit, 200));
   const rows = await kg().run(
     `MATCH (n:Observation)
@@ -110,6 +121,7 @@ export async function listRecentObservations(
 }
 
 export async function listReports(): Promise<ReportSummary[]> {
+  if (useSnapshot()) return snap.listReports();
   const rows = await kg().run(
     `MATCH (n:Report)
      RETURN n.id AS id, n.report_kind AS report_kind,
@@ -121,6 +133,7 @@ export async function listReports(): Promise<ReportSummary[]> {
 }
 
 export async function listSources(): Promise<SourceSummary[]> {
+  if (useSnapshot()) return snap.listSources();
   const rows = await kg().run(
     `MATCH (n:Source)
      RETURN n.id AS id, n.source_kind AS source_kind,
@@ -132,6 +145,7 @@ export async function listSources(): Promise<SourceSummary[]> {
 }
 
 export async function listLog(limit = 50): Promise<LogRow[]> {
+  if (useSnapshot()) return snap.listLog(limit);
   const cap = Math.max(1, Math.min(limit, 500));
   const rows = await kg().run(
     `MATCH (n:LogEntry)
@@ -369,6 +383,7 @@ async function neighborsWithRel(
 }
 
 export async function nodeDetail(id: string): Promise<NodeDetailBundle> {
+  if (useSnapshot()) return snap.nodeDetail(id);
   const label = await findLabel(id);
   if (!label) {
     return { node: null, neighbors: [], observations: [], reports: [] };
@@ -430,6 +445,7 @@ export async function graphAll(): Promise<{
   nodes: GraphNode[];
   edges: GraphEdge[];
 }> {
+  if (useSnapshot()) return snap.graphAll();
   const c = kg();
   const nodeRows = [
     ...((await c.run(
