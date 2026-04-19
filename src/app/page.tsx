@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,8 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ParetoChart } from "@/components/pareto-chart";
 import { manex, type DefectDetail } from "@/lib/manex";
-import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
-import { NewFmeaButton } from "@/components/fmea/new-fmea-dialog";
+import { NewItemMenu } from "@/components/workspace/new-item-menu";
 import {
   DefectTrendChart,
   type ForecastPayload,
@@ -220,16 +219,7 @@ export default async function Home({
           </h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/incidents">
-              Browse incidents <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <NewAnalysisButton variant="outline" />
-          <NewFmeaButton variant="outline" />
-          <Button asChild size="sm">
-            <Link href="/report/new">New 8D report</Link>
-          </Button>
+          <NewItemMenu />
         </div>
       </div>
 
@@ -343,10 +333,6 @@ export default async function Home({
         <Card className="lg:col-span-2">
           <CardHeader className="px-4 pb-2 pt-3">
             <CardTitle className="text-sm">Defect Pareto</CardTitle>
-            <CardDescription className="text-[11px] leading-tight">
-              80/20 across all defects. Detection-bias: a tall &quot;Pruefung
-              Linie 2&quot; bar is not a root cause.
-            </CardDescription>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0">
             {pareto.buckets.length ? (

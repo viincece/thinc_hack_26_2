@@ -58,7 +58,7 @@ export function NewFmeaButton({
   );
 }
 
-function NewFmeaDialog({ onClose }: { onClose: () => void }) {
+export function NewFmeaDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [articles, setArticles] = useState<ArticleSummary[] | null>(null);
   const [err, setErr] = useState<string | null>(null);

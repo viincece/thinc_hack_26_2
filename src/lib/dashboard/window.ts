@@ -12,7 +12,7 @@
 export const WINDOW_KEYS = ["24h", "7d", "30d", "6m"] as const;
 export type WindowKey = (typeof WINDOW_KEYS)[number];
 
-export const DEFAULT_WINDOW: WindowKey = "7d";
+export const DEFAULT_WINDOW: WindowKey = "30d";
 
 export function parseWindow(raw: string | string[] | undefined): WindowKey {
   const v = Array.isArray(raw) ? raw[0] : raw;

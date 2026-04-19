@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { NewAnalysisButton } from "@/components/reports/new-analysis-dialog";
+import { NewItemMenu } from "@/components/workspace/new-item-menu";
 
 import type { DraftKind } from "@/lib/drafts-kinds";
 import { DraftKindChip } from "@/components/drafts/kind-chip";
@@ -332,7 +332,7 @@ export function ReportSidepanel({
             </span>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Button
             size="sm"
             onClick={() => void onSaveCurrent(draftName)}
@@ -346,24 +346,17 @@ export function ReportSidepanel({
             )}
             Save
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
+          <button
+            type="button"
             onClick={onNewDraft}
-            className="h-7"
-            title="Start a fresh 8D"
+            title="Start a fresh 8D — discards unsaved changes"
+            className="text-[11px] text-muted-olive underline-offset-2 hover:text-brand-orange hover:underline"
           >
-            <FilePlus className="h-3.5 w-3.5" />
-            New
-          </Button>
-        </div>
-        <div className="mt-2">
-          <NewAnalysisButton
-            size="sm"
-            variant="outline"
-            className="h-7 w-full"
-            label="New incidence analysis"
-          />
+            reset
+          </button>
+          <div className="ml-auto">
+            <NewItemMenu size="sm" variant="outline" />
+          </div>
         </div>
         <div className="mt-2">
           <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">

@@ -54,7 +54,7 @@ export function NewAnalysisButton({
   );
 }
 
-function NewAnalysisDialog({ onClose }: { onClose: () => void }) {
+export function NewAnalysisDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);

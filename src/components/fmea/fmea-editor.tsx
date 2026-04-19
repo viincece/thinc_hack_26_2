@@ -6,7 +6,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
-  CircleDot,
+  ChevronDown,
+  ChevronRight,
   Loader2,
   Sparkles,
 } from "lucide-react";
@@ -26,20 +27,23 @@ import type {
 } from "@/lib/fmea/types";
 
 /**
- * FMEA editor — header form + horizontally scrollable table.
+ * FMEA editor — row-as-card layout.
  *
- * UX priorities:
- *   - The RPN column is the "at a glance" signal; it's bold, colour-
- *     banded (green/amber/red) and right-anchored so sorting-by-RPN-
- *     desc (which the generator already does) puts hot rows first.
- *   - Every cell carries a status chip (grounded / suggested / needs
- *     input). Suggested / needs-input cells glow so the engineer sees
- *     what still needs review at a glance.
- *   - "Approve row" promotes every suggested / needs-input cell in
- *     that row to `grounded` (with source="approved by engineer") so
- *     the heat-map calms down as the engineer works through the table.
- *   - S / O / D / RPN re-compute live as the engineer edits the
- *     numeric cells.
+ * Why: the classic AIAG grid has 13 columns, which means horizontal
+ * scrolling and cramped cells on any reasonable viewport. Each row is
+ * really a small document — *one failure mode for one component* — so
+ * rendering it as a stacked, expandable card reads much better than
+ * squashing 13 columns on one line.
+ *
+ * Collapsed row shows the five things the engineer scans for:
+ *   - element / function
+ *   - failure mode
+ *   - S · O · D pill chips
+ *   - RPN badge (colour-banded)
+ *   - "approve row" button when any cell is still suggested / needs input
+ *
+ * Expanded panel is a 2-column responsive grid. Every field has a full
+ * label and a wide input so values are always visible.
  */
 
 type EditableTextKey =
@@ -56,30 +60,64 @@ type EditableTextKey =
 
 type EditableNumberKey = "severity" | "occurrence" | "detectionScore";
 
+type FilterMode = "all" | "needs_review" | "approved";
+
 export function FmeaEditor({ initial }: { initial: FmeaDoc }) {
   const [doc, setDoc] = useState<FmeaDoc>(initial);
   const [dirty, setDirty] = useState(false);
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
+  const [filter, setFilter] = useState<FilterMode>("all");
 
-  const overallStats = useMemo(() => {
+  // Rows auto-start expanded if their RPN is ≥ 100 — these are the
+  // ones that deserve the engineer's attention on page open.
+  const initialExpanded = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of doc.rows) if (r.rpn >= 100) set.add(r.id);
+    return set;
+  }, [doc.rows]);
+  const [expanded, setExpanded] = useState<Set<string>>(initialExpanded);
+
+  const toggleRow = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+  const expandAll = () =>
+    setExpanded(new Set(doc.rows.map((r) => r.id)));
+  const collapseAll = () => setExpanded(new Set());
+
+  const stats = useMemo(() => {
     const n = doc.rows.length;
     let grounded = 0;
     let suggested = 0;
     let needs = 0;
     let maxRpn = 0;
+    let reviewRows = 0;
+    let approvedRows = 0;
     for (const r of doc.rows) {
       maxRpn = Math.max(maxRpn, r.rpn);
-      const cells = collectCells(r);
-      for (const c of cells) {
+      const needsRow = rowNeedsReview(r);
+      if (needsRow) reviewRows++;
+      else approvedRows++;
+      for (const c of collectCells(r)) {
         if (c.status === "grounded") grounded++;
         else if (c.status === "suggested") suggested++;
         else if (c.status === "needs_input") needs++;
       }
     }
-    return { n, grounded, suggested, needs, maxRpn };
+    return { n, grounded, suggested, needs, maxRpn, reviewRows, approvedRows };
   }, [doc]);
+
+  const visibleRows = useMemo(() => {
+    if (filter === "all") return doc.rows;
+    if (filter === "needs_review") return doc.rows.filter(rowNeedsReview);
+    return doc.rows.filter((r) => !rowNeedsReview(r));
+  }, [doc.rows, filter]);
 
   const updateHeader = useCallback((patch: Partial<FmeaDoc["header"]>) => {
     setDoc((prev) => ({ ...prev, header: { ...prev.header, ...patch } }));
@@ -148,33 +186,23 @@ export function FmeaEditor({ initial }: { initial: FmeaDoc }) {
   const save = useCallback(async () => {
     setSavingState("saving");
     try {
-      const r = await fetch("/api/fmea/generate", {
-        // We reuse the generate endpoint for the first pass; follow-up
-        // saves go through a PATCH-ish endpoint that overwrites the
-        // JSON on disk. For now we just re-POST the updated doc.
-        method: "PUT",
+      const r = await fetch(`/api/fmea/${encodeURIComponent(doc.id)}/save`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ doc }),
-      }).catch(() => null);
-      // If the PUT endpoint isn't wired yet, fall back to saving via a
-      // dedicated save route (added below).
-      if (!r || !r.ok) {
-        const r2 = await fetch(`/api/fmea/${encodeURIComponent(doc.id)}/save`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ doc }),
-        });
-        if (!r2.ok) throw new Error(`save ${r2.status}`);
-      }
+      });
+      if (!r.ok) throw new Error(`save ${r.status}`);
       setSavingState("saved");
       setDirty(false);
+      // Let the workspace rails refresh in case name / max RPN changed.
+      window.dispatchEvent(new Event("s3:workspace-changed"));
     } catch {
       setSavingState("error");
     }
   }, [doc]);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-4 px-6 py-5">
+    <div className="mx-auto max-w-[1200px] space-y-4 px-6 py-5">
       {/* top bar */}
       <div className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
@@ -206,64 +234,64 @@ export function FmeaEditor({ initial }: { initial: FmeaDoc }) {
         </h1>
         <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-olive">
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-semibold uppercase text-emerald-800 ring-1 ring-inset ring-emerald-200">
-            {overallStats.grounded} grounded
+            {stats.grounded} grounded
           </span>
           <span className="rounded-full bg-violet-100 px-2 py-0.5 font-semibold uppercase text-violet-800 ring-1 ring-inset ring-violet-200">
-            {overallStats.suggested} suggested
+            {stats.suggested} suggested
           </span>
           <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold uppercase text-amber-800 ring-1 ring-inset ring-amber-200">
-            {overallStats.needs} needs input
+            {stats.needs} needs input
           </span>
           <span className="rounded-full bg-sage-cream px-2 py-0.5 font-semibold uppercase text-muted-olive ring-1 ring-inset ring-sage-border">
-            top RPN {overallStats.maxRpn}
+            top RPN {stats.maxRpn}
           </span>
         </div>
       </div>
 
-      {/* Header form */}
+      {/* Header form — all English */}
       <Card>
         <CardHeader className="px-4 pb-2 pt-3">
           <CardTitle className="text-sm">FMEA header</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 px-4 pb-4 pt-0 md:grid-cols-3">
           <HeaderField
-            label="Modell / System / Fertigung"
+            label="Model / system / production"
             value={doc.header.modelSystem}
             onChange={(v) => updateHeader({ modelSystem: v })}
           />
           <HeaderField
-            label="Produktname"
+            label="Product name"
             value={doc.header.productName}
             onChange={(v) => updateHeader({ productName: v })}
           />
           <HeaderField
-            label="Produkt-Nummer"
+            label="Product number"
             value={doc.header.productNumber}
             onChange={(v) => updateHeader({ productNumber: v })}
           />
           <HeaderField
-            label="Techn. Änderungsstand"
+            label="Technical revision"
             value={doc.header.revision}
             onChange={(v) => updateHeader({ revision: v })}
           />
           <HeaderField
-            label="Erstellt durch (Name / Abt.)"
+            label="Created by (name / dept)"
             value={doc.header.createdBy}
             onChange={(v) => updateHeader({ createdBy: v })}
           />
           <HeaderField
-            label="Überarbeitet"
+            label="Revised by"
             value={doc.header.revisedBy}
             onChange={(v) => updateHeader({ revisedBy: v })}
           />
           <HeaderField
-            label="Erstellt"
+            label="Created"
             type="date"
             value={doc.header.createdAt}
             onChange={(v) => updateHeader({ createdAt: v })}
           />
           <HeaderField
-            label="Aufwand (h)"
+            label="Effort (hours)"
             type="number"
             value={doc.header.effortHours != null ? String(doc.header.effortHours) : ""}
             onChange={(v) =>
@@ -271,53 +299,62 @@ export function FmeaEditor({ initial }: { initial: FmeaDoc }) {
             }
           />
           <HeaderField
-            label="Verantwortlich"
+            label="Responsible"
             value={doc.header.responsible}
             onChange={(v) => updateHeader({ responsible: v })}
           />
         </CardContent>
       </Card>
 
-      {/* Grid */}
+      {/* Risk analysis */}
       <Card>
-        <CardHeader className="px-4 pb-2 pt-3">
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 px-4 pb-2 pt-3">
           <CardTitle className="text-sm">
-            Risk table · {doc.rows.length} rows · sorted by RPN ↓
+            Risk analysis · {doc.rows.length} rows · sorted by RPN ↓
           </CardTitle>
-        </CardHeader>
-        <CardContent className="px-0 pb-2 pt-0">
-          <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-0 text-[12px]">
-              <thead className="sticky top-0 z-10 bg-sage-cream/80 text-[10px] uppercase tracking-wider text-muted-olive">
-                <tr>
-                  <Th className="w-[200px]">Element / Funktion</Th>
-                  <Th className="w-[140px]">Mögl. Fehler</Th>
-                  <Th className="w-[220px]">Folgen</Th>
-                  <Th className="w-[60px] text-center">S</Th>
-                  <Th className="w-[220px]">Ursachen</Th>
-                  <Th className="w-[60px] text-center">O</Th>
-                  <Th className="w-[220px]">Vermeidung</Th>
-                  <Th className="w-[220px]">Entdeckungs-Ma.</Th>
-                  <Th className="w-[60px] text-center">D</Th>
-                  <Th className="w-[80px] text-right">RPZ</Th>
-                  <Th className="w-[240px]">Abstell-Ma.</Th>
-                  <Th className="w-[160px]">Verantwortlich / Termin</Th>
-                  <Th className="w-[120px] text-right" />
-                </tr>
-              </thead>
-              <tbody>
-                {doc.rows.map((r) => (
-                  <FmeaRowView
-                    key={r.id}
-                    row={r}
-                    onText={(key, v) => updateTextCell(r.id, key, v)}
-                    onNumber={(key, v) => updateNumberCell(r.id, key, v)}
-                    onApprove={() => approveRow(r.id)}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-2">
+            <FilterSegment
+              value={filter}
+              onChange={setFilter}
+              stats={stats}
+            />
+            <button
+              type="button"
+              onClick={expandAll}
+              className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive hover:text-brand-orange"
+              title="Expand every row"
+            >
+              expand all
+            </button>
+            <span className="text-[10px] text-muted-olive">·</span>
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive hover:text-brand-orange"
+              title="Collapse every row"
+            >
+              collapse all
+            </button>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-2 px-3 pb-3 pt-0">
+          {visibleRows.length === 0 ? (
+            <div className="rounded-md border border-dashed border-sage-border p-6 text-center text-[12px] italic text-muted-olive">
+              No rows match the current filter.
+            </div>
+          ) : (
+            visibleRows.map((row) => (
+              <RiskRowCard
+                key={row.id}
+                row={row}
+                expanded={expanded.has(row.id)}
+                onToggle={() => toggleRow(row.id)}
+                onText={(k, v) => updateTextCell(row.id, k, v)}
+                onNumber={(k, v) => updateNumberCell(row.id, k, v)}
+                onApprove={() => approveRow(row.id)}
+              />
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
@@ -325,207 +362,292 @@ export function FmeaEditor({ initial }: { initial: FmeaDoc }) {
 }
 
 /* -------------------------------------------------------------- *
- *  Row rendering
+ *  Row card
  * -------------------------------------------------------------- */
 
-function FmeaRowView({
+function RiskRowCard({
   row,
+  expanded,
+  onToggle,
   onText,
   onNumber,
   onApprove,
 }: {
   row: FmeaRow;
-  onText: (key: EditableTextKey, v: string) => void;
-  onNumber: (key: EditableNumberKey, v: number) => void;
+  expanded: boolean;
+  onToggle: () => void;
+  onText: (k: EditableTextKey, v: string) => void;
+  onNumber: (k: EditableNumberKey, v: number) => void;
   onApprove: () => void;
 }) {
   const needsReview = rowNeedsReview(row);
 
   return (
-    <tr
+    <div
       className={cn(
-        "align-top",
+        "overflow-hidden rounded-md border",
         needsReview
-          ? "bg-amber-50/40 hover:bg-amber-50/60"
-          : "hover:bg-sage-cream/40",
+          ? "border-amber-200 bg-amber-50/30"
+          : "border-sage-border bg-parchment",
       )}
     >
-      <TextCell cell={row.elementFunction} onChange={(v) => onText("elementFunction", v)} />
-      <TextCell cell={row.failureMode} onChange={(v) => onText("failureMode", v)} />
-      <TextCell cell={row.effects} onChange={(v) => onText("effects", v)} multiline />
-      <NumberCell
-        cell={row.severity}
-        onChange={(v) => onNumber("severity", v)}
-        min={1}
-        max={10}
-      />
-      <TextCell cell={row.causes} onChange={(v) => onText("causes", v)} multiline />
-      <NumberCell
-        cell={row.occurrence}
-        onChange={(v) => onNumber("occurrence", v)}
-        min={1}
-        max={10}
-      />
-      <TextCell cell={row.prevention} onChange={(v) => onText("prevention", v)} multiline />
-      <TextCell cell={row.detection} onChange={(v) => onText("detection", v)} multiline />
-      <NumberCell
-        cell={row.detectionScore}
-        onChange={(v) => onNumber("detectionScore", v)}
-        min={1}
-        max={10}
-      />
-      <td className="border-b border-sage-border/70 px-2 py-1 text-right align-middle">
-        <span
-          className={cn(
-            "inline-block min-w-[48px] rounded px-1.5 py-0.5 text-right text-sm font-extrabold tabular-nums",
-            rpnBand(row.rpn),
-          )}
-        >
-          {row.rpn}
-        </span>
-      </td>
-      <TextCell cell={row.recommendedActions} onChange={(v) => onText("recommendedActions", v)} multiline />
-      <td className="border-b border-sage-border/70 px-2 py-1">
-        <div className="flex flex-col gap-1">
-          <TextInner cell={row.responsibility} onChange={(v) => onText("responsibility", v)} />
-          <TextInner cell={row.dueDate} onChange={(v) => onText("dueDate", v)} placeholder="YYYY-MM-DD" />
+      {/* Collapsed header */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-sage-cream/30"
+      >
+        {expanded ? (
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-olive" />
+        ) : (
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-olive" />
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold text-deep-olive">
+              {row.elementFunction.value ?? "(no element)"}
+            </span>
+            {row.partNumber ? (
+              <span className="shrink-0 rounded bg-sage-cream px-1 font-mono text-[10px] text-muted-olive ring-1 ring-inset ring-sage-border">
+                {row.partNumber}
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-olive">
+            <span className="font-medium text-olive-ink">
+              Failure mode:{" "}
+              <span className="font-mono">
+                {row.failureMode.value ?? "—"}
+              </span>
+            </span>
+            {row.failureMode.source ? (
+              <span className="font-mono text-[10px]">
+                · {row.failureMode.source}
+              </span>
+            ) : null}
+          </div>
         </div>
-      </td>
-      <td className="border-b border-sage-border/70 px-2 py-1 align-middle">
+
+        {/* Scores — always visible, comfortably sized */}
+        <div className="hidden items-center gap-1 sm:flex">
+          <ScorePill label="S" value={row.severity.value} status={row.severity.status} />
+          <ScorePill label="O" value={row.occurrence.value} status={row.occurrence.status} />
+          <ScorePill label="D" value={row.detectionScore.value} status={row.detectionScore.status} />
+        </div>
+        <RpnBadge value={row.rpn} />
         {needsReview ? (
-          <button
-            type="button"
-            onClick={onApprove}
-            className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800 transition-colors hover:bg-emerald-100"
-            title="Promote every suggested / needs-input cell in this row to grounded."
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onApprove();
+            }}
+            className="inline-flex cursor-pointer shrink-0 items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800 transition-colors hover:bg-emerald-100"
+            title="Promote every suggested / needs-input cell in this row to grounded"
           >
             <CheckCircle2 className="h-3 w-3" />
-            Approve row
-          </button>
+            Approve
+          </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-[10px] text-muted-olive">
+          <span className="inline-flex shrink-0 items-center gap-1 text-[10px] text-muted-olive">
             <CheckCircle2 className="h-3 w-3" />
             approved
           </span>
         )}
-      </td>
-    </tr>
+      </button>
+
+      {/* Expanded detail panel */}
+      {expanded ? (
+        <div className="border-t border-sage-border/70 bg-white/40 px-3 py-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {/* Left column — qualitative fields */}
+            <FieldBlock
+              label="Element / function"
+              cell={row.elementFunction}
+              onChange={(v) => onText("elementFunction", v)}
+            />
+            <FieldBlock
+              label="Failure mode"
+              cell={row.failureMode}
+              onChange={(v) => onText("failureMode", v)}
+            />
+            <FieldBlock
+              label="Effects of failure"
+              cell={row.effects}
+              onChange={(v) => onText("effects", v)}
+              multiline
+            />
+            <FieldBlock
+              label="Potential causes"
+              cell={row.causes}
+              onChange={(v) => onText("causes", v)}
+              multiline
+            />
+            <FieldBlock
+              label="Prevention controls"
+              cell={row.prevention}
+              onChange={(v) => onText("prevention", v)}
+              multiline
+            />
+            <FieldBlock
+              label="Detection controls"
+              cell={row.detection}
+              onChange={(v) => onText("detection", v)}
+              multiline
+            />
+          </div>
+
+          {/* Scores row */}
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <NumericField
+              label="Severity (S)"
+              cell={row.severity}
+              onChange={(v) => onNumber("severity", v)}
+            />
+            <NumericField
+              label="Occurrence (O)"
+              cell={row.occurrence}
+              onChange={(v) => onNumber("occurrence", v)}
+            />
+            <NumericField
+              label="Detection (D)"
+              cell={row.detectionScore}
+              onChange={(v) => onNumber("detectionScore", v)}
+            />
+          </div>
+          <div className="mt-1 text-right text-[10px] text-muted-olive">
+            RPN = S × O × D = <span className="font-mono">{row.rpn}</span>
+          </div>
+
+          {/* Actions row */}
+          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <FieldBlock
+              label="Recommended corrective actions"
+              cell={row.recommendedActions}
+              onChange={(v) => onText("recommendedActions", v)}
+              multiline
+            />
+            <FieldBlock
+              label="Actions taken"
+              cell={row.actionsTaken}
+              onChange={(v) => onText("actionsTaken", v)}
+              multiline
+            />
+            <FieldBlock
+              label="Responsible"
+              cell={row.responsibility}
+              onChange={(v) => onText("responsibility", v)}
+            />
+            <FieldBlock
+              label="Due date"
+              cell={row.dueDate}
+              onChange={(v) => onText("dueDate", v)}
+              placeholder="YYYY-MM-DD"
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
-function TextCell({
-  cell,
-  onChange,
-  multiline,
-}: {
-  cell: FmeaCell<string>;
-  onChange: (v: string) => void;
-  multiline?: boolean;
-}) {
-  return (
-    <td className="border-b border-sage-border/70 px-2 py-1 align-top">
-      <TextInner cell={cell} onChange={onChange} multiline={multiline} />
-    </td>
-  );
-}
+/* -------------------------------------------------------------- *
+ *  Field primitives
+ * -------------------------------------------------------------- */
 
-function TextInner({
+function FieldBlock({
+  label,
   cell,
   onChange,
   multiline,
   placeholder,
 }: {
+  label: string;
   cell: FmeaCell<string>;
   onChange: (v: string) => void;
   multiline?: boolean;
   placeholder?: string;
 }) {
-  const value = cell.value ?? "";
   return (
-    <div className={cn("rounded border bg-white/70 p-1", cellBorder(cell.status))}>
-      <div className="mb-0.5 flex items-center justify-between gap-1">
+    <div className={cn("rounded-md border bg-white/80 p-2", cellBorder(cell.status))}>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive">
+          {label}
+        </span>
         <StatusChip status={cell.status} />
-        {cell.source ? (
-          <span
-            className="truncate font-mono text-[9px] text-muted-olive"
-            title={cell.source}
-          >
-            {cell.source}
-          </span>
-        ) : null}
       </div>
       {multiline ? (
         <textarea
-          value={value}
+          value={cell.value ?? ""}
           onChange={(e) => onChange(e.target.value)}
+          rows={3}
           placeholder={cell.status === "needs_input" ? cell.note ?? "needs input" : placeholder}
-          rows={2}
-          className="block w-full resize-y bg-transparent text-[12px] leading-5 outline-none placeholder:italic placeholder:text-muted-olive"
+          className="block w-full resize-y bg-transparent text-[13px] leading-5 outline-none placeholder:italic placeholder:text-muted-olive"
         />
       ) : (
         <input
           type="text"
-          value={value}
+          value={cell.value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={cell.status === "needs_input" ? cell.note ?? "needs input" : placeholder}
-          className="block w-full bg-transparent text-[12px] outline-none placeholder:italic placeholder:text-muted-olive"
+          className="block w-full bg-transparent text-[13px] outline-none placeholder:italic placeholder:text-muted-olive"
         />
       )}
+      {cell.source ? (
+        <div className="mt-1 truncate font-mono text-[10px] text-muted-olive">
+          evidence: {cell.source}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function NumberCell({
+function NumericField({
+  label,
   cell,
   onChange,
-  min,
-  max,
 }: {
+  label: string;
   cell: FmeaCell<number>;
   onChange: (v: number) => void;
-  min: number;
-  max: number;
 }) {
   const v = cell.value ?? 0;
   return (
-    <td className="border-b border-sage-border/70 px-2 py-1 align-top">
-      <div className={cn("rounded border bg-white/70 p-1 text-center", cellBorder(cell.status))}>
-        <div className="mb-0.5 flex items-center justify-center">
-          <StatusChip status={cell.status} compact />
-        </div>
+    <div className={cn("rounded-md border bg-white/80 p-2", cellBorder(cell.status))}>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-olive">
+          {label}
+        </span>
+        <StatusChip status={cell.status} />
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="range"
+          min={1}
+          max={10}
+          step={1}
+          value={v}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="h-1 flex-1 cursor-pointer accent-emerald-600"
+        />
         <input
           type="number"
-          min={min}
-          max={max}
+          min={1}
+          max={10}
           value={v === 0 ? "" : v}
           onChange={(e) => {
             const n = Number(e.target.value);
             if (!Number.isFinite(n)) return;
-            onChange(Math.max(min, Math.min(max, n)));
+            onChange(Math.max(1, Math.min(10, n)));
           }}
-          className="block w-full bg-transparent text-center text-sm font-bold outline-none"
+          className="w-14 rounded border border-sage-border bg-white px-2 py-1 text-center text-sm font-bold outline-none focus:border-light-border"
         />
       </div>
-    </td>
-  );
-}
-
-function Th({
-  children,
-  className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <th
-      className={cn(
-        "border-b-2 border-sage-border bg-sage-cream/70 px-2 py-1 text-left font-semibold",
-        className,
-      )}
-    >
-      {children}
-    </th>
+      {cell.source ? (
+        <div className="mt-1 truncate font-mono text-[10px] text-muted-olive">
+          evidence: {cell.source}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -555,66 +677,130 @@ function HeaderField({
   );
 }
 
-function StatusChip({
+function ScorePill({
+  label,
+  value,
   status,
-  compact,
 }: {
+  label: string;
+  value: number | null;
   status: FmeaStatus;
-  compact?: boolean;
 }) {
+  const tone =
+    status === "grounded"
+      ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
+      : status === "suggested"
+        ? "bg-violet-50 text-violet-800 ring-violet-200"
+        : "bg-amber-50 text-amber-800 ring-amber-200";
+  return (
+    <span
+      className={cn(
+        "inline-flex h-6 w-12 items-center justify-center gap-1 rounded-sm text-[11px] font-semibold ring-1 ring-inset",
+        tone,
+      )}
+      title={`${label} = ${value ?? "—"} (${status})`}
+    >
+      <span className="font-mono">{label}</span>
+      <span className="tabular-nums">{value ?? "—"}</span>
+    </span>
+  );
+}
+
+function RpnBadge({ value }: { value: number }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-7 min-w-[60px] items-center justify-center rounded-md px-2 text-sm font-extrabold tabular-nums",
+        rpnBand(value),
+      )}
+      title={`RPN = S × O × D = ${value}`}
+    >
+      {value}
+    </span>
+  );
+}
+
+function StatusChip({ status }: { status: FmeaStatus }) {
   if (status === "grounded") {
     return (
       <span
-        className={cn(
-          "inline-flex items-center gap-0.5 rounded-sm bg-emerald-100 font-semibold uppercase tracking-wider text-emerald-800 ring-1 ring-inset ring-emerald-200",
-          compact ? "px-1 py-0 text-[8px]" : "px-1 py-0 text-[9px]",
-        )}
+        className="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800 ring-1 ring-inset ring-emerald-200"
         title="grounded — cited by a DB row"
       >
-        <CheckCircle2 className={compact ? "h-2 w-2" : "h-2.5 w-2.5"} />
-        {compact ? "" : "grounded"}
+        <CheckCircle2 className="h-2.5 w-2.5" />
+        grounded
       </span>
     );
   }
   if (status === "suggested") {
     return (
       <span
-        className={cn(
-          "inline-flex items-center gap-0.5 rounded-sm bg-violet-100 font-semibold uppercase tracking-wider text-violet-800 ring-1 ring-inset ring-violet-200",
-          compact ? "px-1 py-0 text-[8px]" : "px-1 py-0 text-[9px]",
-        )}
+        className="inline-flex items-center gap-1 rounded-sm bg-violet-100 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-violet-800 ring-1 ring-inset ring-violet-200"
         title="AI suggestion — review before accepting"
       >
-        <Sparkles className={compact ? "h-2 w-2" : "h-2.5 w-2.5"} />
-        {compact ? "" : "AI"}
+        <Sparkles className="h-2.5 w-2.5" />
+        ai
       </span>
     );
   }
   return (
     <span
-      className={cn(
-        "inline-flex items-center gap-0.5 rounded-sm bg-amber-100 font-semibold uppercase tracking-wider text-amber-800 ring-1 ring-inset ring-amber-200",
-        compact ? "px-1 py-0 text-[8px]" : "px-1 py-0 text-[9px]",
-      )}
+      className="inline-flex items-center gap-1 rounded-sm bg-amber-100 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-amber-800 ring-1 ring-inset ring-amber-200"
       title="needs input from the engineer"
     >
-      <AlertTriangle className={compact ? "h-2 w-2" : "h-2.5 w-2.5"} />
-      {compact ? "" : "needs"}
+      <AlertTriangle className="h-2.5 w-2.5" />
+      needs
     </span>
   );
 }
 
+function FilterSegment({
+  value,
+  onChange,
+  stats,
+}: {
+  value: FilterMode;
+  onChange: (v: FilterMode) => void;
+  stats: { n: number; reviewRows: number; approvedRows: number };
+}) {
+  const options: Array<{
+    key: FilterMode;
+    label: string;
+    count: number;
+  }> = [
+    { key: "all", label: "all", count: stats.n },
+    { key: "needs_review", label: "needs review", count: stats.reviewRows },
+    { key: "approved", label: "approved", count: stats.approvedRows },
+  ];
+  return (
+    <div className="inline-flex overflow-hidden rounded-md border border-sage-border bg-parchment text-[10px] font-semibold uppercase tracking-wider">
+      {options.map((o) => (
+        <button
+          key={o.key}
+          type="button"
+          onClick={() => onChange(o.key)}
+          className={cn(
+            "px-2 py-0.5",
+            value === o.key
+              ? "bg-emerald-600 text-white"
+              : "text-muted-olive hover:bg-sage-cream",
+          )}
+        >
+          {o.label} <span className="ml-1 tabular-nums">{o.count}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------- *
- *  Helpers — cell mutation + banding
+ *  Helpers
  * -------------------------------------------------------------- */
 
 function bump<T extends string>(
   cell: FmeaCell<T>,
   nextValue: string,
 ): FmeaCell<T> {
-  // Manual edit keeps the existing status chip so the engineer still
-  // sees whether the cell was AI-suggested; only empty → edit promotes
-  // to grounded (mirrors the 8D editor rule).
   const trimmed = nextValue as T;
   if (cell.status === "needs_input" && nextValue.trim() !== "") {
     return { ...cell, value: trimmed, status: "suggested" };
@@ -668,8 +854,7 @@ function rpn(r: FmeaRow): number {
 }
 
 function rpnBand(rpn: number): string {
-  if (rpn >= 200)
-    return "bg-red-500 text-white";
+  if (rpn >= 200) return "bg-red-600 text-white ring-1 ring-inset ring-red-700";
   if (rpn >= 100)
     return "bg-red-100 text-red-800 ring-1 ring-inset ring-red-200";
   if (rpn >= 40)
@@ -682,6 +867,3 @@ function cellBorder(status: FmeaStatus): string {
   if (status === "suggested") return "border-violet-200";
   return "border-amber-200";
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _unused = CircleDot; // silence unused-import warnings when lint runs

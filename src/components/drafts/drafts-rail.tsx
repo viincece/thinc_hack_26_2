@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DRAFT_KINDS, type DraftKind } from "@/lib/drafts-kinds";
 import { DraftKindChip, draftKindMeta } from "./kind-chip";
+import { NewItemMenu } from "@/components/workspace/new-item-menu";
 
 const COLLAPSED_KEY = "s3:drafts-rail-collapsed";
 const FILTER_KEY = "s3:drafts-rail-filter";
@@ -215,7 +216,7 @@ export function DraftsRail() {
         </button>
         <Link
           href="/report/new"
-          title="New 8D draft"
+          title="Quick start: new 8D (use the expanded rail for FMEA / analysis)"
           className="flex h-8 w-8 items-center justify-center rounded-md text-muted-olive hover:bg-hover-bg hover:text-brand-orange"
         >
           <FilePlus className="h-4 w-4" />
@@ -290,16 +291,7 @@ export function DraftsRail() {
       </div>
 
       <div className="border-b border-sage-border/70 p-2">
-        <Link
-          href="/report/new"
-          className="flex items-center gap-1.5 rounded-md border border-sage-border bg-light-sage px-2 py-1.5 text-xs font-semibold text-olive-ink transition-colors hover:bg-hover-bg hover:text-brand-orange"
-        >
-          <FilePlus className="h-3.5 w-3.5" />
-          New 8D draft
-        </Link>
-        <div className="mt-1 text-[10px] leading-snug text-sage">
-          FMEA & Analysis editors coming — kinds are already tracked per file.
-        </div>
+        <NewItemMenu variant="outline" size="sm" className="w-full" />
       </div>
 
       {/* Kind filters */}
