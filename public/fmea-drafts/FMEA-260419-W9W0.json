@@ -1,0 +1,1580 @@
+{
+  "id": "FMEA-260419-W9W0",
+  "name": "ART-00001 — FMEA",
+  "generatedAt": "2026-04-19T12:35:13.554Z",
+  "source": {
+    "articleId": "ART-00001"
+  },
+  "header": {
+    "kind": "Design",
+    "modelSystem": "ART-00001",
+    "productName": "",
+    "productNumber": "ART-00001",
+    "revision": "",
+    "createdBy": "",
+    "revisedBy": "",
+    "createdAt": "2026-04-19",
+    "effortHours": null,
+    "responsible": ""
+  },
+  "rows": [
+    {
+      "id": "BN-00003__SOLDER_COLD",
+      "bomNodeId": "BN-00003",
+      "partNumber": "PM-00008",
+      "findNumber": "C12",
+      "elementFunction": {
+        "value": "Kondensator 100uF X7R (C12)",
+        "status": "grounded",
+        "source": "PM=PM-00008, BN-00003"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "26 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 10,
+        "status": "grounded",
+        "source": "severity_max=critical, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 9,
+        "status": "grounded",
+        "source": "26 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": "ESR-Messung Kondensator",
+        "status": "grounded",
+        "source": "TST-00001"
+      },
+      "detectionScore": {
+        "value": 7,
+        "status": "suggested"
+      },
+      "rpn": 630,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00002__VIB_FAIL",
+      "bomNodeId": "BN-00002",
+      "partNumber": "PM-00006",
+      "findNumber": "U1",
+      "elementFunction": {
+        "value": "Mikrocontroller STM32F4 (U1)",
+        "status": "grounded",
+        "source": "PM=PM-00006, BN-00002"
+      },
+      "failureMode": {
+        "value": "VIB_FAIL",
+        "status": "grounded",
+        "source": "3 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 8,
+        "status": "grounded",
+        "source": "severity_max=high, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 5,
+        "status": "grounded",
+        "source": "3 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 360,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00005__VISUAL_CRACK",
+      "bomNodeId": "BN-00005",
+      "partNumber": "PM-00007",
+      "findNumber": "U2",
+      "elementFunction": {
+        "value": "Spannungsregler LM7805 (U2)",
+        "status": "grounded",
+        "source": "PM=PM-00007, BN-00005"
+      },
+      "failureMode": {
+        "value": "VISUAL_CRACK",
+        "status": "grounded",
+        "source": "3 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 6,
+        "status": "grounded",
+        "source": "severity_max=medium, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 5,
+        "status": "grounded",
+        "source": "3 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 270,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00007__VISUAL_CRACK",
+      "bomNodeId": "BN-00007",
+      "partNumber": "PM-00002",
+      "findNumber": "C5",
+      "elementFunction": {
+        "value": "Kondensator 47uF 25V (C5)",
+        "status": "grounded",
+        "source": "PM=PM-00002, BN-00007"
+      },
+      "failureMode": {
+        "value": "VISUAL_CRACK",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 8,
+        "status": "grounded",
+        "source": "severity_max=high, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 216,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00002__SOLDER_COLD",
+      "bomNodeId": "BN-00002",
+      "partNumber": "PM-00006",
+      "findNumber": "U1",
+      "elementFunction": {
+        "value": "Mikrocontroller STM32F4 (U1)",
+        "status": "grounded",
+        "source": "PM=PM-00006, BN-00002"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 8,
+        "status": "grounded",
+        "source": "severity_max=high, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 216,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00005__VIB_FAIL",
+      "bomNodeId": "BN-00005",
+      "partNumber": "PM-00007",
+      "findNumber": "U2",
+      "elementFunction": {
+        "value": "Spannungsregler LM7805 (U2)",
+        "status": "grounded",
+        "source": "PM=PM-00007, BN-00005"
+      },
+      "failureMode": {
+        "value": "VIB_FAIL",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 8,
+        "status": "grounded",
+        "source": "severity_max=high, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 216,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00003__LABEL_MISALIGN",
+      "bomNodeId": "BN-00003",
+      "partNumber": "PM-00008",
+      "findNumber": "C12",
+      "elementFunction": {
+        "value": "Kondensator 100uF X7R (C12)",
+        "status": "grounded",
+        "source": "PM=PM-00008, BN-00003"
+      },
+      "failureMode": {
+        "value": "LABEL_MISALIGN",
+        "status": "grounded",
+        "source": "6 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 7,
+        "status": "grounded",
+        "source": "6 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": "ESR-Messung Kondensator",
+        "status": "grounded",
+        "source": "TST-00001"
+      },
+      "detectionScore": {
+        "value": 7,
+        "status": "suggested"
+      },
+      "rpn": 196,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00008__LABEL_MISALIGN",
+      "bomNodeId": "BN-00008",
+      "partNumber": "PM-00009",
+      "findNumber": "D1",
+      "elementFunction": {
+        "value": "Diode Schottky SK34 (D1)",
+        "status": "grounded",
+        "source": "PM=PM-00009, BN-00008"
+      },
+      "failureMode": {
+        "value": "LABEL_MISALIGN",
+        "status": "grounded",
+        "source": "4 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 5,
+        "status": "grounded",
+        "source": "4 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 180,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00007__SOLDER_COLD",
+      "bomNodeId": "BN-00007",
+      "partNumber": "PM-00002",
+      "findNumber": "C5",
+      "elementFunction": {
+        "value": "Kondensator 47uF 25V (C5)",
+        "status": "grounded",
+        "source": "PM=PM-00002, BN-00007"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 6,
+        "status": "grounded",
+        "source": "severity_max=medium, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 162,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00008__VIB_FAIL",
+      "bomNodeId": "BN-00008",
+      "partNumber": "PM-00009",
+      "findNumber": "D1",
+      "elementFunction": {
+        "value": "Diode Schottky SK34 (D1)",
+        "status": "grounded",
+        "source": "PM=PM-00009, BN-00008"
+      },
+      "failureMode": {
+        "value": "VIB_FAIL",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 6,
+        "status": "grounded",
+        "source": "severity_max=medium, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 162,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00004__SOLDER_COLD",
+      "bomNodeId": "BN-00004",
+      "partNumber": "PM-00015",
+      "findNumber": "R33",
+      "elementFunction": {
+        "value": "Widerstand 4.7k Thermal (R33)",
+        "status": "grounded",
+        "source": "PM=PM-00015, BN-00004"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 6,
+        "status": "grounded",
+        "source": "severity_max=medium, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 162,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00002__POLARITY",
+      "bomNodeId": "BN-00002",
+      "partNumber": "PM-00006",
+      "findNumber": "U1",
+      "elementFunction": {
+        "value": "Mikrocontroller STM32F4 (U1)",
+        "status": "grounded",
+        "source": "PM=PM-00006, BN-00002"
+      },
+      "failureMode": {
+        "value": "POLARITY",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 6,
+        "status": "grounded",
+        "source": "severity_max=medium, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 162,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00007__MISSING_PART",
+      "bomNodeId": "BN-00007",
+      "partNumber": "PM-00002",
+      "findNumber": "C5",
+      "elementFunction": {
+        "value": "Kondensator 47uF 25V (C5)",
+        "status": "grounded",
+        "source": "PM=PM-00002, BN-00007"
+      },
+      "failureMode": {
+        "value": "MISSING_PART",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 108,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00008__SOLDER_COLD",
+      "bomNodeId": "BN-00008",
+      "partNumber": "PM-00009",
+      "findNumber": "D1",
+      "elementFunction": {
+        "value": "Diode Schottky SK34 (D1)",
+        "status": "grounded",
+        "source": "PM=PM-00009, BN-00008"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 108,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00004__VISUAL_SCRATCH",
+      "bomNodeId": "BN-00004",
+      "partNumber": "PM-00015",
+      "findNumber": "R33",
+      "elementFunction": {
+        "value": "Widerstand 4.7k Thermal (R33)",
+        "status": "grounded",
+        "source": "PM=PM-00015, BN-00004"
+      },
+      "failureMode": {
+        "value": "VISUAL_SCRATCH",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 108,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00004__LABEL_MISALIGN",
+      "bomNodeId": "BN-00004",
+      "partNumber": "PM-00015",
+      "findNumber": "R33",
+      "elementFunction": {
+        "value": "Widerstand 4.7k Thermal (R33)",
+        "status": "grounded",
+        "source": "PM=PM-00015, BN-00004"
+      },
+      "failureMode": {
+        "value": "LABEL_MISALIGN",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 108,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00005__SOLDER_COLD",
+      "bomNodeId": "BN-00005",
+      "partNumber": "PM-00007",
+      "findNumber": "U2",
+      "elementFunction": {
+        "value": "Spannungsregler LM7805 (U2)",
+        "status": "grounded",
+        "source": "PM=PM-00007, BN-00005"
+      },
+      "failureMode": {
+        "value": "SOLDER_COLD",
+        "status": "grounded",
+        "source": "2 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "2 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No test gate covers this part yet."
+      },
+      "detectionScore": {
+        "value": 9,
+        "status": "suggested"
+      },
+      "rpn": 108,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00003__TEST_OOL",
+      "bomNodeId": "BN-00003",
+      "partNumber": "PM-00008",
+      "findNumber": "C12",
+      "elementFunction": {
+        "value": "Kondensator 100uF X7R (C12)",
+        "status": "grounded",
+        "source": "PM=PM-00008, BN-00003"
+      },
+      "failureMode": {
+        "value": "TEST_OOL",
+        "status": "grounded",
+        "source": "1 past defects"
+      },
+      "effects": {
+        "value": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or ",
+        "status": "grounded",
+        "source": "field_claim sample (29 total on article)"
+      },
+      "severity": {
+        "value": 4,
+        "status": "grounded",
+        "source": "severity_max=low, claims=29"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Confirm the root cause — consult the KG or past 8D reports."
+      },
+      "occurrence": {
+        "value": 3,
+        "status": "grounded",
+        "source": "1 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List the in-line controls that should keep this from occurring."
+      },
+      "detection": {
+        "value": "ESR-Messung Kondensator",
+        "status": "grounded",
+        "source": "TST-00001"
+      },
+      "detectionScore": {
+        "value": 7,
+        "status": "suggested"
+      },
+      "rpn": 84,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend a corrective action; reference past 8D or initiatives."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Pick a realistic due date."
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Updated once the action is in place."
+      }
+    },
+    {
+      "id": "BN-00011__unknown",
+      "bomNodeId": "BN-00011",
+      "partNumber": "PM-00011",
+      "findNumber": "H1",
+      "elementFunction": {
+        "value": "Gehaeuse Aluminium A200 (H1)",
+        "status": "grounded",
+        "source": "PM=PM-00011"
+      },
+      "failureMode": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No historical defects on PM-00011 in the last 6 months — fill the failure mode from knowledge of similar components."
+      },
+      "effects": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Describe the failure's impact."
+      },
+      "severity": {
+        "value": 3,
+        "status": "suggested",
+        "source": "no historical data"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Consult the KG for common failure modes."
+      },
+      "occurrence": {
+        "value": 1,
+        "status": "grounded",
+        "source": "0 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List preventive controls."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List detection controls."
+      },
+      "detectionScore": {
+        "value": 5,
+        "status": "suggested",
+        "source": "no coverage data"
+      },
+      "rpn": 15,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend actions."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input"
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input"
+      }
+    },
+    {
+      "id": "BN-00012__unknown",
+      "bomNodeId": "BN-00012",
+      "partNumber": "PM-00010",
+      "findNumber": "J1",
+      "elementFunction": {
+        "value": "Stecker 10-pin SPH (J1)",
+        "status": "grounded",
+        "source": "PM=PM-00010"
+      },
+      "failureMode": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No historical defects on PM-00010 in the last 6 months — fill the failure mode from knowledge of similar components."
+      },
+      "effects": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Describe the failure's impact."
+      },
+      "severity": {
+        "value": 3,
+        "status": "suggested",
+        "source": "no historical data"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Consult the KG for common failure modes."
+      },
+      "occurrence": {
+        "value": 1,
+        "status": "grounded",
+        "source": "0 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List preventive controls."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List detection controls."
+      },
+      "detectionScore": {
+        "value": 5,
+        "status": "suggested",
+        "source": "no coverage data"
+      },
+      "rpn": 15,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend actions."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input"
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input"
+      }
+    },
+    {
+      "id": "BN-00009__unknown",
+      "bomNodeId": "BN-00009",
+      "partNumber": "PM-00017",
+      "findNumber": "K1",
+      "elementFunction": {
+        "value": "Relais 12V SPDT (K1)",
+        "status": "grounded",
+        "source": "PM=PM-00017"
+      },
+      "failureMode": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No historical defects on PM-00017 in the last 6 months — fill the failure mode from knowledge of similar components."
+      },
+      "effects": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Describe the failure's impact."
+      },
+      "severity": {
+        "value": 3,
+        "status": "suggested",
+        "source": "no historical data"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Consult the KG for common failure modes."
+      },
+      "occurrence": {
+        "value": 1,
+        "status": "grounded",
+        "source": "0 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List preventive controls."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List detection controls."
+      },
+      "detectionScore": {
+        "value": 5,
+        "status": "suggested",
+        "source": "no coverage data"
+      },
+      "rpn": 15,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend actions."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input"
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input"
+      }
+    },
+    {
+      "id": "BN-00013__unknown",
+      "bomNodeId": "BN-00013",
+      "partNumber": "PM-00012",
+      "findNumber": "SCR",
+      "elementFunction": {
+        "value": "Schrauben M3x8 verz. (SCR)",
+        "status": "grounded",
+        "source": "PM=PM-00012"
+      },
+      "failureMode": {
+        "value": null,
+        "status": "needs_input",
+        "note": "No historical defects on PM-00012 in the last 6 months — fill the failure mode from knowledge of similar components."
+      },
+      "effects": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Describe the failure's impact."
+      },
+      "severity": {
+        "value": 3,
+        "status": "suggested",
+        "source": "no historical data"
+      },
+      "causes": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Consult the KG for common failure modes."
+      },
+      "occurrence": {
+        "value": 1,
+        "status": "grounded",
+        "source": "0 defects in last 6 months"
+      },
+      "prevention": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List preventive controls."
+      },
+      "detection": {
+        "value": null,
+        "status": "needs_input",
+        "note": "List detection controls."
+      },
+      "detectionScore": {
+        "value": 5,
+        "status": "suggested",
+        "source": "no coverage data"
+      },
+      "rpn": 15,
+      "recommendedActions": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Recommend actions."
+      },
+      "responsibility": {
+        "value": null,
+        "status": "needs_input",
+        "note": "Assign an owner."
+      },
+      "dueDate": {
+        "value": null,
+        "status": "needs_input"
+      },
+      "actionsTaken": {
+        "value": null,
+        "status": "needs_input"
+      }
+    }
+  ]
+}

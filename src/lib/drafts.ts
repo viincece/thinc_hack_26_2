@@ -112,7 +112,13 @@ export async function listDrafts(): Promise<DraftRecord[]> {
         date: parsed.date,
         kind: parsed.kind ?? kindFromId(parsed.id),
         filename,
-        updatedAt: entry.uploadedAt,
+        // `savedAt` is the authoritative write time captured when the
+        // draft was persisted. Prefer it over `entry.uploadedAt` — the
+        // blob store's upload time can cluster if files were migrated
+        // in bulk, which collapses newest-first ordering in the
+        // sidepanel. Fall back only for legacy drafts written before
+        // `savedAt` existed.
+        updatedAt: parsed.savedAt ?? entry.uploadedAt,
         problemPreview: (parsed.doc?.problem ?? "").slice(0, 140),
         articleName:
           parsed.doc?.customer?.articleName ||
@@ -124,6 +130,8 @@ export async function listDrafts(): Promise<DraftRecord[]> {
       // Skip malformed files without failing the whole list.
     }
   }
+  // Newest first — matches the drafts-rail + report-sidepanel sort so
+  // clients don't need to re-sort.
   out.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
   return out;
 }

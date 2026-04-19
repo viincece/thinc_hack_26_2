@@ -1,0 +1,72 @@
+{
+  "reportId": 12,
+  "summaryShort": "Solder bridges on QFP components at SMT line 2 (EQ Beta) causing increased scrap rate since this morning.",
+  "summaryLong": "The caller reported **solder bridges on QFP components** at **SMT line 2 (SMC2)** during the **EQ Beta** process. The defect has been occurring since this morning and has led to a significantly increased scrap rate. The worker has already **checked and readjusted the solder paste and reflow oven parameters** as a corrective measure.",
+  "facts": {
+    "factory": {
+      "value": null,
+      "status": "missing"
+    },
+    "line": {
+      "value": "SMT-Bestückungslinie 2",
+      "status": "grounded",
+      "source": "An der SMC2 beim EQ Beta"
+    },
+    "section": {
+      "value": "EQ Beta",
+      "status": "grounded",
+      "source": "beim EQ Beta"
+    },
+    "article": {
+      "value": null,
+      "status": "missing"
+    },
+    "part": {
+      "value": "QFP-Bauteile",
+      "status": "grounded",
+      "source": "Lötbrücken an den QFP-Bauteilen"
+    },
+    "defect_code": {
+      "value": "SOLDER_BRIDGE",
+      "status": "grounded",
+      "source": "Lötbrücken an den QFP-Bauteilen"
+    },
+    "severity": {
+      "value": "high",
+      "status": "grounded",
+      "source": "die Ausschussrate ist deutlich gestiegen"
+    },
+    "quantity": {
+      "value": null,
+      "status": "missing"
+    },
+    "product_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "order_id": {
+      "value": null,
+      "status": "missing"
+    },
+    "caller_role": {
+      "value": "Maschinenbediener",
+      "status": "suggested"
+    },
+    "keywords": {
+      "value": [
+        "Lötbrücken",
+        "QFP",
+        "SMC2",
+        "EQ Beta",
+        "Ausschussrate",
+        "Lötpaste",
+        "Reaktorparameter",
+        "nachjustiert"
+      ],
+      "status": "grounded",
+      "source": "Lötbrücken an den QFP-Bauteilen ... Ausschussrate ist deutlich gestiegen ... Lötpaste und die Reaktorparameter schon geprüft und nachjustiert"
+    }
+  },
+  "generatedAt": "2026-04-19T12:49:42.840Z",
+  "modelVersion": "claude-opus-4-6"
+}
